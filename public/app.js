@@ -73,6 +73,8 @@ const HECHO = new Set(['COMPLETADO', 'OMITIDO']);
 
 // ---------------------------------------------------------------- pestañas
 function switchTab(name) {
+  const prev = $('#tabs button.on')?.dataset.tab;
+  if (name === 'docs' && prev !== 'docs') TREE_OPEN = null;
   $$('#tabs button').forEach((b) => b.classList.toggle('on', b.dataset.tab === name));
   $$('.tab').forEach((t) => t.classList.toggle('on', t.id === `tab-${name}`));
   $('#pageTitle').textContent = { resumen: 'Resumen', rutas: 'Rutas', ejecucion: 'Ejecución', docs: 'Documentos', insumos: 'Insumos', cuenta: 'Cuenta' }[name] || '';
@@ -647,7 +649,10 @@ function toggleTip(btn) {
 }
 // el tooltip se ancla al icono: si la columna se desplaza, se cierra.
 // El propio clic puede desplazar la columna para ver el icono: ese primer desplazamiento no cuenta.
-$('#mbox').addEventListener('scroll', () => { if (Date.now() - tipTs > 300) cerrarTip(); }, true);
+$('#mbox').addEventListener('scroll', (e) => {
+  if (e.target?.closest?.('#tipSkill')) return; // el scroll interno del tooltip no lo cierra
+  if (Date.now() - tipTs > 300) cerrarTip();
+}, true);
 
 // ---- constructor de rutas propias
 let B = null;
@@ -1115,16 +1120,20 @@ const fileIcon = (name) => ICON[EXT[(name.split('.').pop() || '').toLowerCase()]
 const LABEL = { inputs: 'Insumos', evidence: 'Evidencia', 'context-pack': 'Paquete de contexto', outputs: 'Entregables' };
 const countFiles = (n) => (n.dir ? n.children.reduce((a, c) => a + countFiles(c), 0) : 1);
 
+// Carpetas abiertas del árbol. Vive mientras estás en Documentos; al volver a entrar se reinicia.
+let TREE_OPEN = null;
 function renderTree() {
+  if (TREE_OPEN === null) TREE_OPEN = new Set(S.tree.filter((n) => n.name === 'outputs' || n.name === 'context-pack').map((n) => n.path));
   const box = $('#tree'); box.innerHTML = '';
-  const mk = (n, open, top) => {
+  const mk = (n, _defOpen, top) => {
+    const open = n.dir && TREE_OPEN.has(n.path);
     if (n.dir) {
       const root = top ? ` root r-${esc(n.name)}` : '';
       const wrap = el(`<div><div class="d${root}" tabindex="0" role="button">${top ? ICON[n.name] || ICON.folder : ICON.folder}<span class="nm" ${top ? `title="${esc(n.name)}/"` : ''}>${esc(top ? LABEL[n.name] || n.name : n.name)}</span>${top ? `<span class="cnt">${countFiles(n)}</span>` : ''}<span class="car">${open ? '▾' : '▸'}</span></div><div class="kids" ${open ? '' : 'hidden'}></div></div>`);
       const kids = $('.kids', wrap);
       n.children.forEach((c) => kids.append(mk(c, false, false)));
       if (!n.children.length) kids.append(el('<div class="muted empty">vacío</div>'));
-      const toggle = () => { kids.hidden = !kids.hidden; $('.car', wrap).textContent = kids.hidden ? '▸' : '▾'; };
+      const toggle = () => { kids.hidden = !kids.hidden; $('.car', wrap).textContent = kids.hidden ? '▸' : '▾'; if (kids.hidden) TREE_OPEN.delete(n.path); else TREE_OPEN.add(n.path); };
       $('.d', wrap).addEventListener('click', toggle);
       $('.d', wrap).addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
       return wrap;
