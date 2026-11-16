@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Vista previa de marca</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--fuente); color: var(--tinta); background: #fff; font-size: 10pt; line-height: 1.3; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .hoja { max-width: 21.59cm; margin: 24px auto; box-shadow: 0 0 0 1px var(--linea); }
+  .portada { background: var(--tinta); color: #fff; padding: 1.8cm; min-height: 14cm; position: relative; overflow: hidden; }
+  .portada .logo { height: 40px; }
+  .portada .nombre-texto { font-weight: 700; font-size: 16pt; }
+  .portada .puntos { position: absolute; top: 1.2cm; right: 1.2cm; width: 4cm; height: 3cm;
+    background-image: radial-gradient(var(--cielo) 1px, transparent 1.2px); background-size: 10px 10px; opacity: .25; }
+  .portada .acento { width: 2cm; height: 4pt; background: var(--primario); margin: 3cm 0 8pt; }
+  .portada .rotulo { font-size: 8.5pt; letter-spacing: .14em; text-transform: uppercase; color: var(--gris-portada); }
+  .portada h1 { font-size: 46pt; line-height: 1; margin: 6pt 0; }
+  .portada .sub { color: var(--cielo); font-size: 15pt; }
+  .contenido { padding: 1.2cm 1.8cm; }
+  .rot { font-size: 8pt; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--profundo); }
+  h2 { font-size: 28pt; line-height: 1.1; margin: 4pt 0 12pt; }
+  .tarjetas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7pt; margin: 10pt 0; }
+  .tarjeta { padding: 6pt 9pt; border-radius: 3px; }
+  .tarjeta small { display: block; font-size: 7.5pt; text-transform: uppercase; letter-spacing: .08em; }
+  .tarjeta b { display: block; font-size: 16pt; margin: 2pt 0; }
+  .t1 { background: var(--primario); color: #fff; } .t2 { background: var(--tinta); color: #fff; } .t3 { background: var(--gris-claro); }
+  table { width: 100%; border-collapse: collapse; font-size: 9pt; margin: 10pt 0; }
+  th { background: var(--tinta); color: #fff; text-align: left; padding: 5.5pt 6pt; }
+  td { padding: 3pt 6pt; border-bottom: .75pt solid var(--linea); }
+  tr:nth-child(even) td { background: var(--gris-claro); }
+  .num { text-align: right; } .total td { background: var(--tinte); font-weight: 700; } .destacado { background: var(--primario) !important; color: #fff; }
+  .recuadro { background: var(--tinte); border-left: 4.5pt solid var(--primario); padding: 8pt 10pt; margin: 10pt 0; }
+  .contacto { background: var(--tinta); color: #fff; display: flex; gap: 14pt; align-items: center; padding: 12pt 14pt; margin-top: 12pt; }
+  .contacto .div { width: 1px; align-self: stretch; background: var(--divisor-portada); }
+  .contacto .rot { color: var(--cielo); }
+  .muestras { display: flex; flex-wrap: wrap; gap: 6pt; margin: 10pt 0; }
+  .muestra { width: 2.4cm; font-size: 7.5pt; } .muestra i { display: block; height: 1.2cm; border-radius: 3px; border: .75pt solid var(--linea); }
+</style>
+</head>
+<body>
+<div class="hoja">
+  <div class="portada">
+    <div class="puntos"></div>
+    <img class="logo" src="logos/logo-oscuro.svg" alt="" onerror="this.outerHTML='<span class=nombre-texto>Nombre comercial</span>'">
+    <div class="acento"></div>
+    <div class="rotulo">Propuesta comercial</div>
+    <h1>Propuesta comercial</h1>
+    <div class="sub">Plataforma de ejemplo para validar la marca</div>
+  </div>
+  <div class="contenido">
+    <div class="rot">01. Resumen ejecutivo</div>
+    <h2>Así se ve un documento con esta marca</h2>
+    <p>Párrafo de cuerpo de 10 pt con interlineado de 1,3. Los textos en color usan el tono profundo cuando el primario no alcanza el contraste mínimo.</p>
+    <div class="tarjetas">
+      <div class="tarjeta t1"><small>Duración</small><b>14 semanas</b>Desde la firma</div>
+      <div class="tarjeta t2"><small>Cifra clave</small><b>40 %</b>Menos tiempo por cotización</div>
+      <div class="tarjeta t3"><small>Primer hito</small><b>Semana 3</b>Prototipo validado</div>
+    </div>
+    <table>
+      <tr><th>Componente</th><th>Qué incluye</th><th class="num">Inversión (COP)</th></tr>
+      <tr><td>Fase 0</td><td>Descubrimiento y alcance cerrado</td><td class="num">8.300.000</td></tr>
+      <tr><td>Fase 1</td><td>Plataforma base</td><td class="num">42.500.000</td></tr>
+      <tr class="total"><td colspan="2">Propuesta recomendada</td><td class="num destacado">50.800.000</td></tr>
+    </table>
+    <div class="recuadro"><b>Nuestro compromiso.</b> Frase de compromiso de la marca.</div>
+    <div class="muestras">
+      <div class="muestra"><i style="background:var(--primario)"></i>primario</div>
+      <div class="muestra"><i style="background:var(--profundo)"></i>profundo</div>
+      <div class="muestra"><i style="background:var(--intermedio)"></i>intermedio</div>
+      <div class="muestra"><i style="background:var(--cielo)"></i>cielo</div>
+      <div class="muestra"><i style="background:var(--tinte)"></i>tinte</div>
+      <div class="muestra"><i style="background:var(--tinta)"></i>tinta</div>
+    </div>
+    <div class="contacto">
+      <img src="logos/logo-oscuro.svg" alt="" style="height:28px" onerror="this.outerHTML='<b>Nombre comercial</b>'">
+      <div class="div"></div>
+      <div><div class="rot">Hablemos</div><b>Nombre de quien firma</b><br>Empresa · correo · teléfono · sitio web</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

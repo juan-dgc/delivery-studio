@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Informe de avance {{NOMBRE_PROYECTO}} · {{CLIENTE}}</title>
+<meta name="author" content="{{NOMBRE_COMERCIAL}}">
+<!-- construir_pdf.py reemplaza estas dos líneas por los estilos incrustados (tokens del kit + propuesta.css). -->
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="propuesta.css">
+</head>
+<body>
+<!--
+  ESQUELETO DEL INFORME DE AVANCE. Usa los mismos estilos de la propuesta comercial.
+  - Reemplaza todo el texto de ejemplo. Los marcadores de marca ({{NOMBRE_COMERCIAL}}, {{RAZON_SOCIAL}}, {{DESCRIPTOR}},
+    {{FIRMANTE_NOMBRE}}) los llena construir_pdf.py desde el kit; los del proyecto los reemplazas tú.
+  - Quita las secciones que no apliquen al periodo y renumera. Borra los comentarios. Sin rayas largas ni medias.
+  - El contenido va en una sola sección para que fluya sin saltos de página forzados. Un informe semanal cabe en dos o
+    tres páginas además de la portada.
+-->
+<section class="portada">
+  <div class="puntos"></div>
+  <img class="marca-agua" data-logo="simbolo" alt="">
+  <img class="logo" data-logo="oscuro" alt="{{NOMBRE_COMERCIAL}}">
+  <div class="bloque-titulo">
+    <div class="acento"></div>
+    <div class="rotulo">Informe de avance</div>
+    <h1>Informe de avance</h1>
+    <div class="subtitulo">{{NOMBRE_PROYECTO}}</div>
+  </div>
+  <div class="datos">
+    <div class="dato"><small>Preparado para</small><span>{{CLIENTE}}</span></div>
+    <div class="dato"><small>Preparado por</small><span>{{FIRMANTE_NOMBRE}}, {{NOMBRE_COMERCIAL}}</span></div>
+    <div class="dato"><small>Periodo</small><span>{{PERIODO_EN_PALABRAS}}</span></div>
+    <div class="dato"><small>Fecha</small><span>{{FECHA_EN_PALABRAS}}</span></div>
+    <div class="dato"><small>Estado general</small><span>{{ESTADO_GENERAL}}</span></div>
+  </div>
+  <div class="pie">{{RAZON_SOCIAL}} · {{DESCRIPTOR}}</div>
+</section>
+
+<section class="seccion">
+  <div class="rotulo-seccion">01. Resumen</div>
+  <h1 class="titulo">Título que dice en una frase cómo va el proyecto</h1>
+  <p>Dos o tres frases: qué se logró en el periodo, cómo va frente al plan y qué necesita atención.</p>
+  <div class="tarjetas-datos">
+    <div class="tarjeta-dato"><small>Avance</small><span class="valor">24 de 60</span><span class="desc">Historias con casos de prueba listos</span></div>
+    <div class="tarjeta-dato"><small>Cobertura</small><span class="valor">92 %</span><span class="desc">Criterios de aceptación con caso</span></div>
+    <div class="tarjeta-dato"><small>Defectos abiertos</small><span class="valor">3</span><span class="desc">Ninguno crítico</span></div>
+  </div>
+  <div class="recuadro"><b>Lo que necesitamos de {{CLIENTE}}.</b> La decisión o el insumo más urgente, con su fecha límite.</div>
+
+
+  <div class="rotulo-seccion" style="margin-top:22pt">02. Avance del periodo</div>
+  <h1 class="titulo">Qué se entregó</h1>
+  <table class="datos">
+    <thead><tr><th style="width:30%">Entregable</th><th>Qué contiene</th><th style="width:18%">Estado</th></tr></thead>
+    <tbody>
+      <tr><td><b>Casos de prueba del módulo de acceso</b></td><td>48 casos para 9 historias, revisados.</td><td>Entregado</td></tr>
+    </tbody>
+  </table>
+  <h2>Avance frente al plan</h2>
+  <p>Una frase por frente de trabajo: en línea, adelantado o atrasado, y por qué.</p>
+
+
+  <div class="rotulo-seccion" style="margin-top:22pt">03. Calidad</div>
+  <h1 class="titulo">Qué dicen las pruebas</h1>
+  <table class="datos">
+    <thead><tr><th>Indicador</th><th class="num" style="width:20%">Este periodo</th><th class="num" style="width:20%">Anterior</th></tr></thead>
+    <tbody>
+      <tr><td>Casos ejecutados</td><td class="num">120</td><td class="num">80</td></tr>
+    </tbody>
+  </table>
+  <h2>Defectos relevantes</h2>
+  <ul class="vinetas"><li><b>DEF-004, severidad alta.</b> Qué pasa y cuál es su estado.</li></ul>
+
+
+  <div class="rotulo-seccion" style="margin-top:22pt">04. Riesgos, decisiones y próximos pasos</div>
+  <h1 class="titulo">Qué sigue</h1>
+  <h2>Riesgos y bloqueos</h2>
+  <table class="datos">
+    <thead><tr><th>Riesgo o bloqueo</th><th style="width:16%">Impacto</th><th>Qué se está haciendo</th></tr></thead>
+    <tbody><tr><td>Descripción</td><td>Alto</td><td>Mitigación y responsable</td></tr></tbody>
+  </table>
+  <h2>Decisiones y respuestas pendientes de {{CLIENTE}}</h2>
+  <ul class="vinetas"><li><b>Pregunta.</b> Por qué importa y para cuándo se necesita.</li></ul>
+  <h2>Próximo periodo</h2>
+  <ul class="vinetas"><li><b>Actividad.</b> Qué se entregará.</li></ul>
+</section>
+</body>
+</html>

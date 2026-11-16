@@ -1,0 +1,18 @@
+{
+  "name": "delivery-studio",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Panel local para ejecutar y seguir las rutas de skills del plugin delivery con el Claude Agent SDK",
+  "type": "module",
+  "engines": { "node": ">=18.14.0" },
+  "scripts": {
+    "start": "node scripts/iniciar.mjs",
+    "actualizar-plugin": "node scripts/iniciar.mjs --actualizar-plugin",
+    "login": "node scripts/login.mjs",
+    "doctor": "node scripts/doctor.mjs"
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "^0.3.325",
+    "marked": "^18.2.0"
+  }
+}

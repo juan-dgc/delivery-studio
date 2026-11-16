@@ -1,0 +1,180 @@
+/* Propuesta comercial: estilos de impresión.
+   Los colores y la fuente vienen de tokens.css del kit de marca (variables --primario, --tinta, etc.).
+   construir_pdf.py incrusta tokens.css y este archivo en el HTML y resuelve las variables antes de renderizar.
+   Medidas según la especificación de diseño (references/diseno.md). */
+
+/* ------------------------------------------------------------ página */
+@page {
+  size: 21.59cm 27.94cm;
+  margin: 2.6cm 1.8cm 2.1cm 1.8cm;
+  @top-left {
+    content: url("kit-logo-encabezado");
+    vertical-align: bottom; padding-bottom: 6pt; border-bottom: .75pt solid var(--linea);
+  }
+  @top-right {
+    content: "{{ENCABEZADO}}";
+    font-family: var(--fuente); font-size: 8pt; color: var(--gris-apoyo);
+    vertical-align: bottom; padding-bottom: 6pt; border-bottom: .75pt solid var(--linea);
+  }
+  @bottom-left {
+    content: "{{PIE}}";
+    font-family: var(--fuente); font-size: 8pt; color: var(--gris-apoyo);
+    vertical-align: top; padding-top: 6pt; border-top: 2pt solid var(--primario);
+    width: 1.2cm; white-space: nowrap;
+  }
+  @bottom-right {
+    content: counter(page, decimal-leading-zero);
+    font-family: var(--fuente); font-size: 8pt; color: var(--gris-apoyo);
+    vertical-align: top; padding-top: 6pt;
+  }
+}
+@page :first {
+  margin: 0;
+  counter-reset: page 0;
+  @top-left { content: none; border: none; }
+  @top-right { content: none; border: none; }
+  @bottom-left { content: none; border: none; }
+  @bottom-right { content: none; }
+}
+
+* { box-sizing: border-box; }
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body { margin: 0; font-family: var(--fuente); font-size: 10pt; line-height: 1.3; color: var(--tinta); }
+p { margin: 0 0 6pt; }
+b, strong { font-weight: 700; }
+.texto-color { color: var(--color-texto); }   /* primario o profundo, según contraste */
+
+/* ------------------------------------------------------------ portada */
+.portada {
+  position: relative; width: 21.59cm; height: 27.94cm; overflow: hidden;
+  background: var(--tinta); color: #fff; padding: 1.8cm; break-after: page;
+}
+.portada .logo { height: 1.1cm; }
+.portada .logo-texto { font-size: 16pt; font-weight: 700; }
+.portada .puntos {
+  position: absolute; top: 1.4cm; right: 1.4cm; width: 5cm; height: 4cm;
+  background-image: radial-gradient(var(--cielo) 1.1px, transparent 1.4px); background-size: 11px 11px; opacity: .22;
+}
+.portada .marca-agua { position: absolute; right: -2cm; bottom: -2cm; width: 13cm; opacity: .12; }
+.portada .bloque-titulo { position: absolute; left: 1.8cm; right: 1.8cm; top: 9.5cm; }
+.portada .acento { width: 2cm; height: 4pt; background: var(--primario); margin-bottom: 10pt; }
+.portada .rotulo { font-size: 8.5pt; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--gris-portada); }
+.portada h1 { font-size: 46pt; line-height: 1; font-weight: 700; margin: 8pt 0 10pt; }
+.portada .subtitulo { font-size: 15pt; color: var(--cielo); max-width: 15cm; }
+.portada .datos { position: absolute; left: 1.8cm; right: 1.8cm; bottom: 3.4cm; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12pt 18pt; }
+.portada .dato { border-top: .75pt solid var(--divisor-portada); padding-top: 6pt; }
+.portada .dato small { display: block; font-size: 7.5pt; letter-spacing: .1em; text-transform: uppercase; color: var(--gris-portada); margin-bottom: 2pt; }
+.portada .dato span { font-size: 9pt; font-weight: 700; }
+.portada .pie { position: absolute; left: 1.8cm; right: 1.8cm; bottom: 1.4cm; font-size: 7.5pt; color: var(--gris-portada); }
+
+/* ------------------------------------------------------------ secciones y títulos */
+.seccion { break-before: page; }
+.rotulo-seccion { font-size: 8pt; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--color-texto); margin-bottom: 4pt; }
+h1.titulo { font-size: 28pt; line-height: 1.1; font-weight: 700; margin: 0 0 14pt; break-after: avoid; }
+h2 { font-size: 13pt; font-weight: 700; margin: 14pt 0 5pt; break-after: avoid; }
+h1 + h2 { margin-top: 0; }
+.saludo { font-weight: 700; margin-bottom: 8pt; }
+.nota { font-size: 7.5pt; color: var(--gris-apoyo); margin-top: 4pt; }
+.frase-central { font-size: 13pt; font-weight: 700; line-height: 1.25; margin: 4pt 0 10pt; }
+
+/* ------------------------------------------------------------ listas */
+ul.vinetas { list-style: none; margin: 0 0 6pt; padding: 0 0 0 18pt; }
+ul.vinetas li { position: relative; margin-bottom: 4pt; padding-left: 0; }
+ul.vinetas li::before { content: "•"; position: absolute; left: -13pt; font-weight: 700; color: var(--primario); }
+ol.pasos { list-style: none; counter-reset: paso; margin: 0 0 6pt; padding: 0 0 0 18pt; }
+ol.pasos li { counter-increment: paso; position: relative; margin-bottom: 5pt; }
+ol.pasos li::before { content: counter(paso) "."; position: absolute; left: -16pt; font-weight: 700; color: var(--color-texto); }
+
+/* ------------------------------------------------------------ tarjetas de datos (3) */
+.tarjetas-datos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7pt; margin: 10pt 0; break-inside: avoid; }
+.tarjeta-dato { padding: 5.5pt 9pt; border-radius: 2pt; }
+.tarjeta-dato small { display: block; font-size: 7.5pt; letter-spacing: .08em; text-transform: uppercase; }
+.tarjeta-dato .valor { display: block; font-size: 17pt; font-weight: 700; line-height: 1.15; margin: 2pt 0; }
+.tarjeta-dato .desc { font-size: 7.5pt; }
+.tarjeta-dato:nth-child(1) { background: var(--primario); color: #fff; }
+.tarjeta-dato:nth-child(2) { background: var(--tinta); color: #fff; }
+.tarjeta-dato:nth-child(3) { background: var(--gris-claro); color: var(--tinta); }
+
+/* ------------------------------------------------------------ tarjetas con ícono (3) */
+.tarjetas-icono { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7pt; margin: 8pt 0; break-inside: avoid; }
+.tarjeta-icono { background: var(--gris-claro); border-top: 3pt solid var(--primario); padding: 7pt 9pt; font-size: 7.5pt; }
+.tarjeta-icono svg { width: 16pt; height: 16pt; stroke: var(--primario); fill: none; stroke-width: 1.8; margin-bottom: 4pt; }
+.tarjeta-icono .titulo-tarjeta { display: block; font-size: 8pt; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 3pt; }
+
+/* ------------------------------------------------------------ tablas de datos */
+table.datos { width: 100%; border-collapse: collapse; font-size: 8.75pt; margin: 8pt 0; }
+table.datos th { background: var(--tinta); color: #fff; font-weight: 700; text-align: left; padding: 5.5pt 6pt; }
+table.datos td { padding: 2.75pt 6pt; border-bottom: .75pt solid var(--linea); vertical-align: top; }
+table.datos tr { break-inside: avoid; }
+table.datos tbody tr:nth-child(even) td { background: var(--gris-claro); }
+table.datos .num { text-align: right; white-space: nowrap; }
+table.datos tr.subtotal td { background: var(--tinte); font-weight: 700; }
+table.datos tr.grupo td { background: var(--tinte); font-size: 7.5pt; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--color-texto); }
+table.datos td.destacado { background: var(--primario) !important; color: #fff; font-weight: 700; }
+table.datos thead { display: table-header-group; }
+
+/* ------------------------------------------------------------ diagrama de flujo en serpiente */
+.flujo { margin: 10pt 0 4pt; break-inside: avoid; }
+.flujo .fila { display: flex; align-items: stretch; }
+.flujo .fila.inversa { flex-direction: row-reverse; }
+.flujo .paso { flex: 1; border-top: 2.25pt solid var(--primario); background: var(--gris-claro); padding: 5.5pt 8pt; font-size: 7.5pt; color: var(--gris-apoyo); }
+.flujo .paso .n { display: block; font-size: 7pt; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--color-texto); }
+.flujo .paso b { display: block; font-size: 8.5pt; color: var(--tinta); margin: 1pt 0 2pt; }
+.flujo .paso.final { background: var(--primario); border-top-color: var(--profundo); color: #fff; }
+.flujo .paso.final .n, .flujo .paso.final b { color: #fff; }
+.flujo .paso.humano { background: var(--tinta); border-top-color: var(--tinta); color: #fff; }
+.flujo .paso.humano .n, .flujo .paso.humano b { color: #fff; }
+.flujo .flecha { width: 14pt; display: flex; align-items: center; justify-content: center; color: var(--primario); font-weight: 700; font-size: 11pt; }
+.flujo .fila .flecha::before { content: "→"; }
+.flujo .fila.inversa .flecha::before { content: "←"; }
+.flujo .bajada { text-align: right; color: var(--primario); font-weight: 700; font-size: 11pt; line-height: 1; padding: 2pt 6%; }
+.flujo .bajada.izquierda { text-align: left; }
+.flujo .bajada::before { content: "↓"; }
+
+/* ------------------------------------------------------------ fases (4) */
+.fases { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7pt; margin: 8pt 0; break-inside: avoid; }
+.fase { background: var(--gris-claro); border-top: 3pt solid var(--primario); padding: 6pt 8pt; font-size: 7.5pt; }
+.fase .numero { display: block; font-size: 20pt; font-weight: 700; line-height: 1; color: var(--color-texto); margin-bottom: 3pt; }
+.fase b { display: block; font-size: 8.5pt; margin-bottom: 2pt; }
+.fase .semanas { display: block; font-size: 7.5pt; font-weight: 700; margin-top: 3pt; }
+
+/* ------------------------------------------------------------ gantt */
+table.gantt { width: 100%; border-collapse: collapse; font-size: 7.5pt; margin: 8pt 0 2pt; table-layout: fixed; break-inside: avoid; }
+table.gantt th { font-weight: 700; color: var(--gris-apoyo); padding: 3pt 0; text-align: center; border-bottom: .75pt solid var(--linea); }
+table.gantt th.tarea, table.gantt td.tarea { text-align: left; width: 30%; padding: 0 6pt 0 0; }
+table.gantt td { height: 22pt; border: .75pt solid var(--linea); padding: 0; text-align: center; }
+table.gantt td.tarea { border-left: none; font-weight: 700; color: var(--tinta); }
+table.gantt td.c1 { background: var(--primario); }
+table.gantt td.c2 { background: var(--intermedio); }
+table.gantt td.c3 { background: var(--profundo); }
+table.gantt td.c4 { background: var(--cielo); }
+table.gantt tr.hitos td { color: var(--tinta); font-size: 9pt; }
+.leyenda { display: flex; flex-wrap: wrap; gap: 4pt 12pt; font-size: 7.5pt; color: var(--gris-apoyo); margin: 4pt 0; }
+.leyenda i { display: inline-block; width: 9pt; height: 9pt; margin-right: 4pt; vertical-align: -1pt; }
+.leyenda .c1 { background: var(--primario); } .leyenda .c2 { background: var(--intermedio); }
+.leyenda .c3 { background: var(--profundo); } .leyenda .c4 { background: var(--cielo); }
+
+/* ------------------------------------------------------------ extensiones numeradas, pagos */
+.extensiones { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7pt; margin: 8pt 0; break-inside: avoid; }
+.extension { background: var(--gris-claro); padding: 6pt 8pt; font-size: 7.5pt; }
+.extension .numero { font-size: 14pt; font-weight: 700; color: var(--color-texto); display: block; }
+.extension b { display: block; font-size: 8.5pt; margin: 1pt 0 2pt; }
+.pagos { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 7pt; margin: 8pt 0; break-inside: avoid; }
+.pago { background: var(--gris-claro); padding: 6pt 9pt; font-size: 7.5pt; }
+.pago small { display: block; font-size: 7.5pt; letter-spacing: .08em; text-transform: uppercase; color: var(--gris-apoyo); }
+.pago .porcentaje { display: block; font-size: 17pt; font-weight: 700; margin: 1pt 0; }
+
+/* ------------------------------------------------------------ recuadro, firmas, contacto, gráfico */
+.recuadro { background: var(--tinte); border-left: 4.5pt solid var(--primario); padding: 8pt 11pt; margin: 10pt 0; break-inside: avoid; }
+.firmas { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2cm; margin: 26pt 0 14pt; break-inside: avoid; }
+.firma { border-top: .75pt solid var(--tinta); padding-top: 5pt; font-size: 8.5pt; line-height: 1.6; }
+.firma b { display: block; }
+.contacto { display: flex; align-items: center; gap: 14pt; background: var(--tinta); color: #fff; padding: 12pt 16pt; margin-top: 12pt; break-inside: avoid; }
+.contacto img { height: 0.8cm; }
+.contacto .divisor { width: .75pt; align-self: stretch; background: var(--divisor-portada); }
+.contacto .rotulo { font-size: 8pt; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--cielo); }
+.contacto .datos-contacto { font-size: 8.5pt; line-height: 1.45; }
+figure.grafico { margin: 8pt 0; break-inside: avoid; }
+figure.grafico svg { width: 100%; height: auto; }
+figure.grafico figcaption { font-size: 7.5pt; color: var(--gris-apoyo); margin-top: 3pt; }
+.evitar-corte { break-inside: avoid; }

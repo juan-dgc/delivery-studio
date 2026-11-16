@@ -1,0 +1,12 @@
+{
+  "port": 3737,
+  "pluginPath": "./plugin/delivery",
+  "authMode": "subscription",
+  "defaultModel": "claude-sonnet-5-5",
+  "models": [
+    { "id": "claude-opus-5-5", "label": "Opus 5.5", "tier": "alto" },
+    { "id": "claude-sonnet-5-5", "label": "Sonnet 5.5", "tier": "medio" },
+    { "id": "claude-haiku-5-5", "label": "Haiku 5.5", "tier": "bajo" }
+  ],
+  "maxTurns": null
+}

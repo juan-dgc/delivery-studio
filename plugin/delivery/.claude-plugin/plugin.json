@@ -1,0 +1,18 @@
+{
+  "name": "delivery",
+  "displayName": "Delivery pipeline",
+  "version": "1.10.0",
+  "description": "Pipeline de entregables para proyectos de software, desde el material crudo del cliente hasta la automatización de pruebas. Cada paso es una skill manual que pregunta antes de decidir y versiona sus resultados.",
+  "author": {
+    "name": "Juan Diego Gutiérrez"
+  },
+  "keywords": [
+    "context-pack",
+    "qa",
+    "user-stories",
+    "test-cases",
+    "playwright",
+    "preventa",
+    "automatizacion"
+  ]
+}

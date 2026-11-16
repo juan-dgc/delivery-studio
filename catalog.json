@@ -1,0 +1,621 @@
+{
+ "descripcion": "Catálogo de skills del plugin delivery para el panel. Los pasos del pipeline (campo paso) toman dependencias y estado del manifiesto real del proyecto (.pipeline/pipeline.json); aquí se declaran los textos, el modelo sugerido y las dependencias de las skills que no son pasos.",
+ "skills": [
+  {
+   "skill": "init-project",
+   "nombre": "Inicializar proyecto",
+   "grupo": "Base",
+   "requiere": [],
+   "produce": ".pipeline/, inputs/, evidence/, context-pack/, outputs/ y CLAUDE.md",
+   "arg": "[nombre del proyecto]",
+   "tier": "bajo"
+  },
+  {
+   "skill": "ingest-sources",
+   "nombre": "Ingerir fuentes",
+   "grupo": "Base",
+   "requiere": [
+    "init-project"
+   ],
+   "insumo": "Material del cliente en inputs/",
+   "produce": "Evidencia citable en evidence/ (EV-NNN)",
+   "arg": "[ampliar]",
+   "tier": "medio"
+  },
+  {
+   "skill": "generate-context-pack",
+   "nombre": "Paquete de contexto",
+   "grupo": "Base",
+   "paso": "00-context-pack",
+   "requiere": [
+    "ingest-sources"
+   ],
+   "insumo": "Evidencia",
+   "produce": "Documentos de contexto en context-pack/",
+   "arg": "[documentos]",
+   "tier": "alto"
+  },
+  {
+   "skill": "verify-context-pack",
+   "nombre": "Verificar paquete de contexto",
+   "grupo": "Base",
+   "requiere": [
+    "generate-context-pack"
+   ],
+   "insumo": "Paquete de contexto",
+   "produce": "Reporte de calidad y puntaje",
+   "tier": "medio"
+  },
+  {
+   "skill": "open-questions",
+   "nombre": "Preguntas abiertas",
+   "grupo": "Base",
+   "requiere": [
+    "generate-context-pack"
+   ],
+   "insumo": "Preguntas OQ-NNN",
+   "produce": "Respuestas incorporadas o cuestionario para el cliente",
+   "tier": "medio"
+  },
+  {
+   "skill": "analyze-change",
+   "nombre": "Analizar cambio",
+   "grupo": "Base",
+   "requiere": [
+    "generate-context-pack"
+   ],
+   "insumo": "Información nueva ya incorporada",
+   "produce": "Plan de regeneración y esfuerzo",
+   "tier": "alto"
+  },
+  {
+   "skill": "create-brand-kit",
+   "nombre": "Kit de marca",
+   "grupo": "Marca",
+   "requiere": [],
+   "insumo": "Tu logo, portafolio o sitio",
+   "produce": "Kit de marca reutilizable",
+   "tier": "medio"
+  },
+  {
+   "skill": "generate-proposal",
+   "nombre": "Propuesta comercial",
+   "grupo": "Preventa",
+   "paso": "01-proposal",
+   "requiere": [],
+   "insumo": "Paquete de contexto",
+   "produce": "Propuesta en PDF y hoja de estimación",
+   "tier": "alto"
+  },
+  {
+   "skill": "generate-user-stories",
+   "nombre": "Historias de usuario",
+   "grupo": "Producto",
+   "paso": "02-user-stories",
+   "requiere": [],
+   "insumo": "Paquete de contexto",
+   "produce": "Historias con criterios de aceptación",
+   "arg": "[lote]",
+   "tier": "alto"
+  },
+  {
+   "skill": "plan-sprint",
+   "nombre": "Plan de sprints",
+   "grupo": "Producto",
+   "paso": "06-sprint-planning",
+   "requiere": [],
+   "insumo": "Historias",
+   "produce": "Sprints registrados como lotes",
+   "arg": "[lote de una etapa nueva, opcional]",
+   "tier": "medio"
+  },
+  {
+   "skill": "generate-design-system",
+   "nombre": "Design system",
+   "grupo": "Producto",
+   "paso": "05-ux-design-system",
+   "requiere": [],
+   "insumo": "Historias",
+   "produce": "Tokens, componentes y vista previa",
+   "tier": "medio"
+  },
+  {
+   "skill": "generate-test-plan",
+   "nombre": "Plan de pruebas",
+   "grupo": "Pruebas",
+   "paso": "02a-test-plan",
+   "requiere": [],
+   "insumo": "Historias",
+   "produce": "Estrategia y riesgo por módulo",
+   "tier": "alto"
+  },
+  {
+   "skill": "generate-test-cases",
+   "nombre": "Casos de prueba",
+   "grupo": "Pruebas",
+   "paso": "03-test-cases",
+   "requiere": [],
+   "insumo": "Historias y plan",
+   "produce": "Casos trazados a cada criterio",
+   "arg": "[lote]",
+   "tier": "alto"
+  },
+  {
+   "skill": "analyze-coverage",
+   "nombre": "Cobertura US/TC",
+   "grupo": "Pruebas",
+   "paso": "04-coverage",
+   "requiere": [],
+   "insumo": "Historias y casos",
+   "produce": "Matriz de trazabilidad y brechas",
+   "arg": "[lote]",
+   "tier": "medio"
+  },
+  {
+   "skill": "report-defects",
+   "nombre": "Reporte de errores",
+   "grupo": "Pruebas",
+   "paso": "18-defect-report",
+   "requiere": [],
+   "insumo": "Fallas de validación o ejecución",
+   "produce": "Defectos DEF-NNN y CSV",
+   "arg": "[lote]",
+   "tier": "medio"
+  },
+  {
+   "skill": "design-architecture",
+   "nombre": "Arquitectura",
+   "grupo": "Diseño",
+   "paso": "07-architecture",
+   "requiere": [],
+   "insumo": "Historias",
+   "produce": "Arquitectura C4 y plan de módulos",
+   "tier": "alto"
+  },
+  {
+   "skill": "design-api-contracts",
+   "nombre": "Contratos de API",
+   "grupo": "Diseño",
+   "paso": "07a-api-contracts",
+   "requiere": [],
+   "insumo": "Arquitectura",
+   "produce": "OpenAPI por servicio",
+   "tier": "alto"
+  },
+  {
+   "skill": "design-integration",
+   "nombre": "Integración externa",
+   "grupo": "Diseño",
+   "paso": "07b-integrations",
+   "requiere": [],
+   "insumo": "Arquitectura",
+   "produce": "Diseño de la integración",
+   "arg": "[INT-NN]",
+   "tier": "medio"
+  },
+  {
+   "skill": "design-db-schema",
+   "nombre": "Esquema de BD",
+   "grupo": "Diseño",
+   "paso": "08-db-schema",
+   "requiere": [],
+   "insumo": "Arquitectura y contratos",
+   "produce": "Esquema, ER y DDL",
+   "tier": "medio"
+  },
+  {
+   "skill": "review-security",
+   "nombre": "Seguridad del diseño",
+   "grupo": "Diseño",
+   "paso": "09-security-review",
+   "requiere": [],
+   "insumo": "Arquitectura y esquema",
+   "produce": "Amenazas y hallazgos",
+   "tier": "alto"
+  },
+  {
+   "skill": "implement-code",
+   "nombre": "Desarrollo",
+   "grupo": "Desarrollo",
+   "paso": "10-development",
+   "requiere": [],
+   "insumo": "Diseño y plan de sprint",
+   "produce": "Código en el repositorio",
+   "arg": "[sprint]",
+   "tier": "alto"
+  },
+  {
+   "skill": "review-code",
+   "nombre": "Revisión de código",
+   "grupo": "Desarrollo",
+   "paso": "10a-code-review",
+   "requiere": [],
+   "insumo": "Código del sprint",
+   "produce": "Hallazgos priorizados",
+   "arg": "[sprint]",
+   "tier": "alto"
+  },
+  {
+   "skill": "audit-code-security",
+   "nombre": "Auditoría de seguridad",
+   "grupo": "Desarrollo",
+   "paso": "10b-security-audit",
+   "requiere": [],
+   "insumo": "Repositorio con código",
+   "produce": "Hallazgos OWASP",
+   "tier": "alto"
+  },
+  {
+   "skill": "validate-development",
+   "nombre": "Validar desarrollo",
+   "grupo": "Desarrollo",
+   "paso": "11-dev-validation",
+   "requiere": [],
+   "insumo": "Código y casos",
+   "produce": "Resultados por caso de prueba",
+   "arg": "[sprint]",
+   "tier": "medio"
+  },
+  {
+   "skill": "setup-cicd-code",
+   "nombre": "CI/CD del código",
+   "grupo": "Desarrollo",
+   "paso": "12-cicd-code",
+   "requiere": [],
+   "insumo": "Código",
+   "produce": "Pipeline de integración y despliegue",
+   "tier": "medio"
+  },
+  {
+   "skill": "select-automation-candidates",
+   "nombre": "Candidatos a automatizar",
+   "grupo": "Automatización",
+   "paso": "13-automation-candidates",
+   "requiere": [],
+   "insumo": "Casos de prueba",
+   "produce": "Lista priorizada",
+   "arg": "[lote]",
+   "tier": "medio"
+  },
+  {
+   "skill": "explore-web-app",
+   "nombre": "Exploración web",
+   "grupo": "Automatización",
+   "paso": "14-web-exploration",
+   "requiere": [],
+   "insumo": "Candidatos y URL del entorno",
+   "produce": "selectors.json y mapa de páginas",
+   "arg": "[lote]",
+   "tier": "medio"
+  },
+  {
+   "skill": "scaffold-automation-framework",
+   "nombre": "Framework de automatización",
+   "grupo": "Automatización",
+   "paso": "15-automation-framework",
+   "requiere": [],
+   "insumo": "Selectores",
+   "produce": "Framework con page objects",
+   "tier": "alto"
+  },
+  {
+   "skill": "automate-test-cases",
+   "nombre": "Automatizar casos",
+   "grupo": "Automatización",
+   "paso": "16-automation-tests",
+   "requiere": [],
+   "insumo": "Framework y selectores",
+   "produce": "Pruebas automatizadas",
+   "arg": "[lote]",
+   "tier": "alto"
+  },
+  {
+   "skill": "run-automated-tests",
+   "nombre": "Ejecutar suite",
+   "grupo": "Automatización",
+   "paso": "17-automation-run",
+   "requiere": [],
+   "insumo": "Pruebas automatizadas",
+   "produce": "Resultados y clasificación de fallas",
+   "arg": "[lote]",
+   "tier": "medio"
+  },
+  {
+   "skill": "setup-cicd-automation",
+   "nombre": "CI/CD de automatización",
+   "grupo": "Automatización",
+   "paso": "19-cicd-automation",
+   "requiere": [],
+   "insumo": "Pruebas y ejecución",
+   "produce": "Pipeline de regresión",
+   "tier": "medio"
+  },
+  {
+   "skill": "review-deliverable",
+   "nombre": "Revisión independiente",
+   "grupo": "Utilidades",
+   "requiere": [
+    "init-project"
+   ],
+   "insumo": "Un entregable existente",
+   "produce": "Revisión con puntaje y hallazgos",
+   "arg": "<paso>",
+   "tier": "alto"
+  },
+  {
+   "skill": "sync-test-management",
+   "nombre": "Sincronizar con el cliente",
+   "grupo": "Utilidades",
+   "requiere": [
+    "generate-user-stories"
+   ],
+   "insumo": "Historias o casos",
+   "produce": "CSV o carga a la herramienta del cliente",
+   "tier": "bajo"
+  },
+  {
+   "skill": "generate-status-report",
+   "nombre": "Informe de avance",
+   "grupo": "Utilidades",
+   "requiere": [
+    "init-project"
+   ],
+   "insumo": "Bitácora y reportes",
+   "produce": "Informe en PDF",
+   "tier": "medio"
+  },
+  {
+   "skill": "kickoff-project",
+   "nombre": "Arranque del proyecto",
+   "grupo": "Gestión",
+   "requiere": [
+    "generate-context-pack"
+   ],
+   "insumo": "Context pack y propuesta",
+   "produce": "Acta de constitución y reunión de arranque con el cliente",
+   "arg": "[acta | reunion | todo]",
+   "tier": "medio"
+  },
+  {
+   "skill": "generate-project-plan",
+   "nombre": "Plan del proyecto",
+   "grupo": "Gestión",
+   "requiere": [
+    "generate-user-stories"
+   ],
+   "insumo": "Backlog y capacidad del equipo",
+   "produce": "Hitos, calendario, ruta de dependencias y línea base",
+   "arg": "[nuevo | actualizar | linea-base]",
+   "tier": "alto"
+  },
+  {
+   "skill": "manage-risks",
+   "nombre": "Registro de riesgos",
+   "grupo": "Gestión",
+   "requiere": [
+    "generate-context-pack"
+   ],
+   "insumo": "Riesgos del context pack y señales del proyecto",
+   "produce": "Registro vivo de riesgos con revisión fechada",
+   "arg": "[revisar | agregar <riesgo> | estado]",
+   "tier": "medio"
+  },
+  {
+   "skill": "track-budget",
+   "nombre": "Presupuesto",
+   "grupo": "Gestión",
+   "requiere": [
+    "init-project"
+   ],
+   "insumo": "Horas trabajadas que tú aportas",
+   "produce": "Horas frente a presupuesto, eficiencia y proyección al cierre",
+   "arg": "[iniciar | registrar | corte]",
+   "tier": "medio"
+  },
+  {
+   "skill": "process-meeting",
+   "nombre": "Acta de reunión",
+   "grupo": "Gestión",
+   "requiere": [
+    "init-project"
+   ],
+   "insumo": "Audio, transcripción o notas de la reunión",
+   "produce": "Acta: decisiones, compromisos (CMP) y preguntas",
+   "arg": "[archivo o EV-NNN] [tema]",
+   "tier": "medio"
+  },
+  {
+   "skill": "close-sprint",
+   "nombre": "Cierre de sprint",
+   "grupo": "Gestión",
+   "requiere": [
+    "plan-sprint"
+   ],
+   "insumo": "Reportes del sprint y lo que tú confirmes",
+   "produce": "Velocidad, destino de lo no terminado, revisión y retrospectiva",
+   "arg": "[sprint-NN] [cierre | revision | retro]",
+   "tier": "medio"
+  },
+  {
+   "skill": "manage-change-request",
+   "nombre": "Solicitud de cambio",
+   "grupo": "Gestión",
+   "requiere": [
+    "generate-context-pack"
+   ],
+   "insumo": "La petición del cliente; ideal el análisis de impacto",
+   "produce": "Solicitud formal (SC-NNN) con impacto, opciones y registro",
+   "arg": "[nuevo <motivo> | aprobar SC-NNN | estado]",
+   "tier": "medio"
+  },
+  {
+   "skill": "plan-uat",
+   "nombre": "Pruebas de aceptación (UAT)",
+   "grupo": "Gestión",
+   "requiere": [
+    "generate-user-stories"
+   ],
+   "insumo": "Historias de la entrega",
+   "produce": "Guiones de UAT, bitácora de resultados y acta de aceptación",
+   "arg": "[lote o entrega] [plan | resultados | acta]",
+   "tier": "medio"
+  },
+  {
+   "skill": "plan-release",
+   "nombre": "Salida a producción",
+   "grupo": "Gestión",
+   "requiere": [
+    "generate-user-stories"
+   ],
+   "insumo": "Historias, pruebas y defectos de la versión",
+   "produce": "Lista de chequeo de salida y recomendación con sustento",
+   "arg": "[vX.Y] [plan | verificar | notas | cierre]",
+   "tier": "alto"
+  },
+  {
+   "skill": "triage-incident",
+   "nombre": "Incidente en producción",
+   "grupo": "Gestión",
+   "requiere": [
+    "init-project"
+   ],
+   "insumo": "El reporte de la falla",
+   "produce": "Registro INC-NNN, causa raíz y plan de corrección",
+   "arg": "[nuevo <descripción> | seguir INC-NNN | estado]",
+   "tier": "alto"
+  }
+ ],
+ "playlists": [
+  {
+   "id": "pruebas-existente",
+   "nombre": "Automatizar pruebas de un sistema existente",
+   "descripcion": "Del material del cliente a la suite automatizada y el reporte de defectos.",
+   "skills": [
+    "init-project",
+    "ingest-sources",
+    "generate-context-pack",
+    "verify-context-pack",
+    "open-questions",
+    "generate-user-stories",
+    "generate-test-plan",
+    "generate-test-cases",
+    "analyze-coverage",
+    "select-automation-candidates",
+    "explore-web-app",
+    "scaffold-automation-framework",
+    "automate-test-cases",
+    "run-automated-tests",
+    "report-defects",
+    "setup-cicd-automation"
+   ]
+  },
+  {
+   "id": "preventa",
+   "nombre": "Proyecto nuevo desde preventa",
+   "descripcion": "Contexto, propuesta comercial, backlog y plan de sprints.",
+   "skills": [
+    "init-project",
+    "ingest-sources",
+    "generate-context-pack",
+    "verify-context-pack",
+    "open-questions",
+    "create-brand-kit",
+    "generate-proposal",
+    "generate-user-stories",
+    "plan-sprint"
+   ]
+  },
+  {
+   "id": "diseno",
+   "nombre": "Diseño técnico del proyecto",
+   "descripcion": "Arquitectura, contratos, esquema y seguridad antes de desarrollar.",
+   "skills": [
+    "design-architecture",
+    "design-api-contracts",
+    "design-integration",
+    "design-db-schema",
+    "review-security",
+    "generate-design-system"
+   ]
+  },
+  {
+   "id": "sprint",
+   "nombre": "Ciclo de un sprint",
+   "descripcion": "Para cada lote: casos, desarrollo, revisión y validación. Pasa el sprint como argumento.",
+   "skills": [
+    "generate-test-cases",
+    "analyze-coverage",
+    "implement-code",
+    "review-code",
+    "validate-development",
+    "report-defects",
+    "setup-cicd-code"
+   ]
+  },
+  {
+   "id": "etapa-2",
+   "repite": true,
+   "nombre": "Nueva etapa del mismo proyecto",
+   "descripcion": "El cliente amplía el alcance: se lee lo nuevo y se crean historias, sprints y casos solo para la etapa, sin tocar lo ya hecho.",
+   "args": {
+    "generate-user-stories": "etapa-2",
+    "plan-sprint": "etapa-2",
+    "generate-test-cases": "etapa-2",
+    "analyze-coverage": "etapa-2"
+   },
+   "skills": [
+    "ingest-sources",
+    "generate-context-pack",
+    "open-questions",
+    "analyze-change",
+    "generate-user-stories",
+    "plan-sprint",
+    "generate-test-cases",
+    "analyze-coverage"
+   ]
+  },
+  {
+   "id": "cambio",
+   "nombre": "Llegó información nueva",
+   "descripcion": "Incorporar el cambio y decidir qué regenerar.",
+   "skills": [
+    "ingest-sources",
+    "generate-context-pack",
+    "open-questions",
+    "generate-user-stories",
+    "analyze-change"
+   ]
+  },
+  {
+   "id": "utilidades",
+   "nombre": "Utilidades",
+   "descripcion": "Se usan cuando hacen falta, sobre lo que ya existe.",
+   "secuencia": false,
+   "skills": [
+    "review-deliverable",
+    "sync-test-management",
+    "generate-status-report",
+    "create-brand-kit",
+    "audit-code-security"
+   ]
+  },
+  {
+   "id": "gestion",
+   "nombre": "Gestión del proyecto",
+   "descripcion": "Acompañan la entrega. No son pasos del pipeline: se usan cuando hacen falta y no bloquean nada.",
+   "secuencia": false,
+   "skills": [
+    "kickoff-project",
+    "generate-project-plan",
+    "manage-risks",
+    "track-budget",
+    "process-meeting",
+    "close-sprint",
+    "manage-change-request",
+    "plan-uat",
+    "plan-release",
+    "triage-incident"
+   ]
+  }
+ ]
+}

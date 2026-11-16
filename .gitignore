@@ -1,0 +1,19 @@
+# Sistema operativo
+.DS_Store
+
+# Dependencias
+node_modules/
+
+# Archivos locales y temporales
+.bak/
+.delivery-last.json
+.delivery-token
+config.local.json
+
+# Variables de entorno y secretos
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log

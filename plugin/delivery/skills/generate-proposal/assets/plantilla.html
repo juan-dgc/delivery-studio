@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Propuesta comercial {{NOMBRE_PROYECTO}} · {{CLIENTE}}</title>
+<meta name="author" content="{{NOMBRE_COMERCIAL}}">
+<!-- construir_pdf.py reemplaza estas dos líneas por los estilos incrustados (tokens del kit + propuesta.css). -->
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="propuesta.css">
+</head>
+<body>
+<!--
+  ESQUELETO DE LA PROPUESTA. Reglas:
+  - Reemplaza todo el texto de ejemplo con contenido del proyecto. Los marcadores {{EN_MAYUSCULAS}} de marca
+    (nombre, logos, contacto) los llena construir_pdf.py desde marca.json; no los toques.
+  - Los marcadores del proyecto ({{CLIENTE}}, {{NOMBRE_PROYECTO}}...) los reemplazas tú.
+  - Para datos faltantes usa corchetes en texto normal: [Datos bancarios por completar].
+  - Borra los comentarios de guía. No uses rayas largas ni medias rayas.
+-->
+
+<!-- ============================================================ PORTADA -->
+<section class="portada">
+  <div class="puntos"></div>
+  <img class="marca-agua" data-logo="simbolo" alt="">
+  <img class="logo" data-logo="oscuro" alt="{{NOMBRE_COMERCIAL}}">
+  <div class="bloque-titulo">
+    <div class="acento"></div>
+    <div class="rotulo">Propuesta comercial</div>
+    <h1>Propuesta comercial</h1>
+    <div class="subtitulo">{{NOMBRE_PROYECTO}}</div>
+  </div>
+  <div class="datos">
+    <div class="dato"><small>Preparada para</small><span>{{CLIENTE}}, {{AREA_O_CARGO}}</span></div>
+    <div class="dato"><small>Preparada por</small><span>{{FIRMANTE_NOMBRE}}, {{NOMBRE_COMERCIAL}}</span></div>
+    <div class="dato"><small>Propuesta</small><span>N° {{NUMERO_PROPUESTA}} · v{{VERSION}}</span></div>
+    <div class="dato"><small>Fecha</small><span>{{FECHA_EN_PALABRAS}}</span></div>
+    <div class="dato"><small>Validez</small><span>{{VALIDEZ}}</span></div>
+  </div>
+  <div class="pie">{{RAZON_SOCIAL}} · {{DESCRIPTOR}}</div>
+</section>
+
+<!-- ============================================================ 01. RESUMEN EJECUTIVO -->
+<section class="seccion">
+  <div class="rotulo-seccion">01. Resumen ejecutivo</div>
+  <h1 class="titulo">Título corto que nombra el resultado de negocio</h1>
+  <p class="saludo">Estimado equipo de {{CLIENTE}}:</p>
+  <p>Párrafo de agradecimiento, propuesta de valor de la empresa y qué describe la propuesta.</p>
+  <p>Párrafo con la cifra central del cliente que dimensiona el problema y lo que se propone.</p>
+  <div class="tarjetas-datos">
+    <div class="tarjeta-dato"><small>Duración</small><span class="valor">14 semanas</span><span class="desc">Desde la firma del contrato</span></div>
+    <div class="tarjeta-dato"><small>Cifra clave</small><span class="valor">40 %</span><span class="desc">Descripción de la cifra y su periodo</span></div>
+    <div class="tarjeta-dato"><small>Primer hito</small><span class="valor">Semana 3</span><span class="desc">Qué se entrega</span></div>
+  </div>
+  <ul class="vinetas">
+    <li><b>La oportunidad.</b> Detalle en una o dos frases.</li>
+    <li><b>Qué recibe {{CLIENTE}}.</b> Detalle.</li>
+    <li><b>Qué cambia.</b> Detalle.</li>
+    <li><b>Cómo convive con {{SISTEMA_ACTUAL}}.</b> Detalle (solo si aplica).</li>
+    <li><b>Cómo se invierte.</b> Detalle.</li>
+  </ul>
+</section>
+
+<!-- ============================================================ 02. CONTEXTO Y OBJETIVOS -->
+<section class="seccion">
+  <div class="rotulo-seccion">02. Contexto y objetivos</div>
+  <h1 class="titulo">Título de contexto</h1>
+  <h2>Situación actual</h2>
+  <p>Dos o tres frases con las cifras reales.</p>
+  <figure class="grafico">
+    <!-- Gráfico nativo en SVG con la paleta de marca y etiquetas directas. Ejemplo de barras: -->
+    <svg viewBox="0 0 600 160" font-family="inherit" font-size="11">
+      <rect x="0" y="20" width="420" height="34" fill="var(--primario)"/><text x="428" y="42" fill="var(--tinta)" font-weight="700">2 días</text>
+      <text x="0" y="14" fill="var(--gris-apoyo)">Hoy</text>
+      <rect x="0" y="94" width="90" height="34" fill="var(--cielo)"/><text x="98" y="116" fill="var(--tinta)" font-weight="700">4 horas</text>
+      <text x="0" y="88" fill="var(--gris-apoyo)">Meta</text>
+    </svg>
+    <figcaption>Tiempo promedio por cotización. Fuente: entrevista con el área comercial, octubre de 2026.</figcaption>
+  </figure>
+  <ul class="vinetas"><li>Cifra de apoyo con su periodo.</li></ul>
+  <h2>Lo que hoy frena la operación</h2>
+  <ul class="vinetas"><li><b>Problema concreto.</b> En palabras del cliente.</li></ul>
+  <h2>Lo que buscamos lograr</h2>
+  <div class="tarjetas-icono">
+    <div class="tarjeta-icono"><svg viewBox="0 0 24 24" fill="none" stroke="var(--primario)" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M5 21V4h11l-2 4 2 4H5"/></svg><span class="titulo-tarjeta">Meta</span>Texto breve.</div>
+    <div class="tarjeta-icono"><svg viewBox="0 0 24 24" fill="none" stroke="var(--primario)" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg><span class="titulo-tarjeta">Solución</span>Texto breve.</div>
+    <div class="tarjeta-icono"><svg viewBox="0 0 24 24" fill="none" stroke="var(--primario)" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M12 3 22 20H2z"/></svg><span class="titulo-tarjeta">Crecimiento</span>Texto breve.</div>
+  </div>
+  <h2>Indicadores de éxito</h2>
+  <ul class="vinetas"><li><b>Indicador:</b> de X hacia Y.</li></ul>
+</section>
+
+<!-- ============================================================ 03. BENEFICIOS -->
+<section class="seccion">
+  <div class="rotulo-seccion">03. Beneficios</div>
+  <h1 class="titulo">Título de beneficios</h1>
+  <p class="frase-central">Una frase con el beneficio principal.</p>
+  <ul class="vinetas"><li><b>Beneficio.</b> Qué cambia para el cliente y cómo.</li></ul>
+</section>
+
+<!-- ============================================================ 04. SOLUCIÓN PROPUESTA -->
+<section class="seccion">
+  <div class="rotulo-seccion">04. Solución propuesta</div>
+  <h1 class="titulo">Título de la solución</h1>
+  <p>Qué es la solución y cómo se relaciona con lo que el cliente ya tiene.</p>
+  <table class="datos">
+    <thead><tr><th style="width:32%">Componente</th><th>Qué hace por {{CLIENTE}}</th></tr></thead>
+    <tbody>
+      <tr><td><b>Componente</b></td><td>Descripción.</td></tr>
+      <tr><td><b>Trazabilidad</b></td><td>Quién hizo qué y cuándo.</td></tr>
+      <tr><td><b>Capacitación y acompañamiento</b></td><td>Descripción.</td></tr>
+    </tbody>
+  </table>
+  <div class="recuadro"><b>El control sigue en manos de una persona.</b> La solución valida y sugiere; una persona siempre aprueba.</div>
+  <h2>Cómo funciona</h2>
+  <div class="flujo">
+    <div class="fila">
+      <div class="paso"><span class="n">Paso 1</span><b>Título</b>Descripción corta.</div><div class="flecha"></div>
+      <div class="paso"><span class="n">Paso 2</span><b>Título</b>Descripción corta.</div><div class="flecha"></div>
+      <div class="paso humano"><span class="n">Paso 3</span><b>Decisión humana</b>Descripción corta.</div><div class="flecha"></div>
+      <div class="paso"><span class="n">Paso 4</span><b>Título</b>Descripción corta.</div>
+    </div>
+    <div class="bajada"></div>
+    <!-- La segunda fila se escribe en orden lógico (5, 6, 7, 8); el CSS la invierte para leerse de derecha a izquierda. -->
+    <div class="fila inversa">
+      <div class="paso"><span class="n">Paso 5</span><b>Título</b>Descripción corta.</div><div class="flecha"></div>
+      <div class="paso"><span class="n">Paso 6</span><b>Título</b>Descripción corta.</div><div class="flecha"></div>
+      <div class="paso final"><span class="n">Paso 7</span><b>Información final</b>Descripción corta.</div>
+    </div>
+  </div>
+  <p class="nota">En color primario, el paso donde queda la información final; en oscuro, la decisión de una persona.</p>
+  <p>Párrafo corto con la regla de diseño más importante.</p>
+</section>
+
+<!-- ============================================================ 05. METODOLOGÍA Y CRONOGRAMA -->
+<section class="seccion">
+  <div class="rotulo-seccion">05. Metodología y cronograma</div>
+  <h1 class="titulo">Título de metodología</h1>
+  <h2>Fases y cronograma</h2>
+  <p>Duración total y qué fases se traslapan.</p>
+  <div class="fases">
+    <div class="fase"><span class="numero">0</span><b>Descubrimiento</b>Reglas, prototipo y alcance cerrado.<span class="semanas">Semanas 1 a 2</span></div>
+    <div class="fase"><span class="numero">1</span><b>Plataforma base</b>Descripción.<span class="semanas">Semanas 3 a 8</span></div>
+    <div class="fase"><span class="numero">2</span><b>Integración</b>Descripción.<span class="semanas">Semanas 7 a 11</span></div>
+    <div class="fase"><span class="numero">3</span><b>Módulo opcional</b>Descripción.<span class="semanas">Semanas 12 a 14</span></div>
+  </div>
+  <h2>Cronograma estimado</h2>
+  <table class="gantt">
+    <thead><tr><th class="tarea">Fase</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th></tr></thead>
+    <tbody>
+      <tr><td class="tarea">Fase 0. Descubrimiento</td><td class="c1"></td><td class="c1"></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="tarea">Fase 1. Plataforma base</td><td></td><td></td><td class="c2"></td><td class="c2"></td><td class="c2"></td><td class="c2"></td><td></td><td></td></tr>
+      <tr><td class="tarea">Fase 2. Integración</td><td></td><td></td><td></td><td></td><td></td><td class="c3"></td><td class="c3"></td><td class="c3"></td></tr>
+      <tr class="hitos"><td class="tarea">Hitos</td><td></td><td>◆</td><td></td><td></td><td></td><td>◆</td><td></td><td>◆</td></tr>
+    </tbody>
+  </table>
+  <div class="leyenda"><span><i class="c1"></i>Fase 0</span><span><i class="c2"></i>Fase 1</span><span><i class="c3"></i>Fase 2</span><span>◆ Hito</span></div>
+  <p class="nota">Las semanas son estimadas y se confirman al cerrar la Fase 0. Los plazos dependen de la entrega oportuna de información y validaciones por parte de {{CLIENTE}}.</p>
+  <h2>Qué queda al terminar cada fase</h2>
+  <ul class="vinetas"><li><b>Fase 0.</b> Entregable verificable.</li></ul>
+  <h2>Extensiones opcionales, después de la puesta en marcha</h2>
+  <div class="extensiones">
+    <div class="extension"><span class="numero">01</span><b>Extensión</b>Descripción.</div>
+    <div class="extension"><span class="numero">02</span><b>Extensión</b>Descripción.</div>
+    <div class="extension"><span class="numero">03</span><b>Extensión</b>Descripción.</div>
+  </div>
+</section>
+
+<!-- ============================================================ 06. CONSIDERACIONES Y SUPUESTOS -->
+<section class="seccion">
+  <div class="rotulo-seccion">06. Consideraciones y supuestos</div>
+  <h1 class="titulo">Título</h1>
+  <h2>Cómo se construye y se prueba</h2><ul class="vinetas"><li>Detalle.</li></ul>
+  <h2>Responsabilidades de {{CLIENTE}}</h2><ul class="vinetas"><li>Detalle.</li></ul>
+  <h2>Seguridad y datos</h2><ul class="vinetas"><li>Detalle.</li></ul>
+  <h2>Fuera del alcance</h2><ul class="vinetas"><li>Detalle.</li></ul>
+</section>
+
+<!-- ============================================================ 07. INVERSIÓN -->
+<section class="seccion">
+  <div class="rotulo-seccion">07. Inversión</div>
+  <h1 class="titulo">Título</h1>
+  <p>Monto recomendado, qué incluye, moneda y si incluye IVA.</p>
+  <table class="datos">
+    <thead><tr><th style="width:26%">Componente</th><th>Qué incluye</th><th class="num" style="width:22%">Inversión (COP)</th></tr></thead>
+    <tbody>
+      <tr><td><b>Fase 0</b></td><td>Descripción.</td><td class="num">8.300.000</td></tr>
+      <tr><td><b>Fase 1</b></td><td>Descripción.</td><td class="num">42.500.000</td></tr>
+      <tr class="subtotal"><td colspan="2">Alcance base</td><td class="num">50.800.000</td></tr>
+      <tr><td><b>Fase 3 (opcional)</b></td><td>Descripción.</td><td class="num">12.000.000</td></tr>
+      <tr class="subtotal"><td colspan="2">Propuesta recomendada</td><td class="num destacado">50.800.000</td></tr>
+      <tr class="subtotal"><td colspan="2">Plataforma completa</td><td class="num">62.800.000</td></tr>
+    </tbody>
+  </table>
+  <p class="nota">Qué fases son de precio cerrado y cuáles se ratifican al terminar la Fase 0. Cuánto baja el valor si se omite un módulo.</p>
+  <h2>Forma de pago</h2>
+  <div class="pagos">
+    <div class="pago"><small>Al iniciar</small><span class="porcentaje">30 %</span>Momento del pago.</div>
+    <div class="pago"><small>Versión de pruebas</small><span class="porcentaje">40 %</span>Momento del pago.</div>
+    <div class="pago"><small>Puesta en marcha</small><span class="porcentaje">30 %</span>Momento del pago.</div>
+  </div>
+  <p><b>Incluido en la implementación.</b> Capacitación y garantía.</p>
+  <p><b>Otros valores.</b> Tarifa por hora para cambios fuera de alcance.</p>
+</section>
+
+<!-- ============================================================ 08. MODELOS DE PAGO (solo si hay soporte o evolución recurrente) -->
+
+<!-- ============================================================ 09. PRÓXIMOS PASOS -->
+<section class="seccion">
+  <div class="rotulo-seccion">09. Próximos pasos</div>
+  <h1 class="titulo">Próximos pasos</h1>
+  <p>Esta propuesta es válida hasta el {{FECHA_VALIDEZ}}.</p>
+  <ol class="pasos">
+    <li><b>Revisar y definir la opción.</b> Detalle.</li>
+    <li><b>Reunión técnica.</b> Validar accesos e infraestructura.</li>
+    <li><b>Firma del contrato.</b> Detalle.</li>
+    <li><b>Inicio de la Fase 0.</b> Detalle.</li>
+  </ol>
+</section>
+
+<!-- ============================================================ 10. TÉRMINOS Y ACEPTACIÓN -->
+<section class="seccion">
+  <div class="rotulo-seccion">10. Términos y aceptación</div>
+  <h1 class="titulo">Términos y aceptación</h1>
+  <ul class="vinetas">
+    <li><b>Contrato.</b> Detalle.</li><li><b>Confidencialidad.</b> Detalle.</li><li><b>Cambios de alcance.</b> Detalle.</li>
+    <li><b>Protección de datos.</b> Detalle.</li><li><b>Garantía y acompañamiento.</b> Detalle.</li><li><b>Soporte y terminación.</b> Detalle.</li>
+  </ul>
+  <h2>Aceptación de la propuesta</h2>
+  <p>Frase de aceptación.</p>
+  <div class="firmas">
+    <div class="firma"><b>Por {{NOMBRE_COMERCIAL}}</b>{{FIRMANTE_NOMBRE}}<br>{{FIRMANTE_CARGO}}<br>NIT {{NIT}}<br>Fecha: [Por completar]</div>
+    <div class="firma"><b>Por {{CLIENTE}}</b>[Nombre]<br>[Cargo]<br>NIT o cédula: [Por completar]<br>Fecha: [Por completar]</div>
+  </div>
+  <div class="recuadro"><b>Nuestro compromiso.</b> {{FRASE_DE_COMPROMISO}}</div>
+  <div class="contacto">
+    <img data-logo="oscuro" alt="{{NOMBRE_COMERCIAL}}">
+    <div class="divisor"></div>
+    <div class="datos-contacto"><div class="rotulo">Hablemos</div><b>{{FIRMANTE_NOMBRE}}</b><br>{{NOMBRE_COMERCIAL}}<br>{{CORREO}} · {{TELEFONO}} · {{SITIO_WEB}}</div>
+  </div>
+</section>
+</body>
+</html>

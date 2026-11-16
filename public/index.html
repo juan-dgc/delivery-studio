@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="es">
+<head>
+<link rel="icon" href="data:,">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Delivery Studio</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="app">
+<aside class="side">
+  <div class="brand"><span class="logo"></span>Delivery Studio</div>
+  <nav class="tabs" id="tabs" aria-label="Secciones">
+    <button data-tab="resumen"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="10" width="7" height="11" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>Resumen</button>
+    <button data-tab="rutas" class="on"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M8.5 6H14a3 3 0 0 1 0 6h-4a3 3 0 0 0 0 6h5.5"/></svg>Rutas</button>
+    <button data-tab="ejecucion"><svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="6 4 20 12 6 20 6 4"/></svg>Ejecución <span class="dot" id="runDot" hidden></span></button>
+    <button data-tab="docs"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>Documentos</button>
+    <button data-tab="insumos"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>Insumos</button>
+    <button data-tab="cuenta"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>Cuenta</button>
+  </nav>
+  <div class="side-foot"><div class="proj" id="proj"></div></div>
+</aside>
+<div class="mainc">
+<header class="top">
+  <h1 id="pageTitle">Rutas</h1>
+  <div class="grow"></div>
+  <div class="auth" id="auth"></div>
+</header>
+<div id="banner" class="banner" role="status" aria-live="polite" hidden></div>
+
+<main>
+  <!-- RUTAS -->
+  <section id="tab-rutas" class="tab on">
+    <div id="chooser" hidden></div>
+    <div id="routeView" hidden>
+      <div class="rtabs" id="rtabs"></div>
+      <div id="suggest"></div>
+      <div id="nextAction"></div>
+      <p class="pdesc" id="pdesc"></p>
+      <div class="progress"><div id="bar"></div><span id="barTxt"></span></div>
+      <div class="flow" id="flow"></div>
+    </div>
+  </section>
+
+  <!-- EJECUCIÓN -->
+  <section id="tab-ejecucion" class="tab">
+    <div class="split">
+      <aside class="runs" id="runs"></aside>
+      <div class="log">
+        <div class="logHead" id="logHead" role="status" aria-live="polite"></div>
+        <div class="logBody" id="logBody"><p class="muted">Elige una skill en Rutas y pulsa Ejecutar.</p></div>
+        <form class="composer" id="composer" hidden>
+          <textarea id="replyText" rows="2" placeholder="Responder a la skill (por ejemplo, contestar una pregunta o pedir un ajuste)"></textarea>
+          <div class="row">
+            <button type="submit" class="primary">Enviar</button>
+            <button type="button" id="btnNext" class="primary" hidden>Continuar con la tanda siguiente</button>
+            <button type="button" id="btnApprove" class="approve primary" disabled title="Se habilita cuando la skill ya respondió">Aprobar etapa</button>
+            <button type="button" id="btnStop" class="danger" hidden>Detener</button>
+            <span class="grow"></span>
+            <button type="button" id="btnFresh" title="Empieza la misma skill con contexto limpio">Nueva sesión</button>
+            <button type="button" id="btnClose" class="danger">Descartar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- DOCUMENTOS -->
+  <section id="tab-docs" class="tab">
+    <div class="split docs">
+      <aside class="tree" id="tree"></aside>
+      <div class="viewer">
+        <div class="viewerBar"><span id="vpath" class="muted">Selecciona un documento</span><span class="grow"></span><button id="vrefresh" class="ghost">Actualizar</button><a id="vopen" target="_blank" rel="noopener" class="ghostlink" hidden>Abrir en pestaña nueva</a></div>
+        <iframe id="frame" sandbox="allow-same-origin" title="Documento"></iframe>
+      </div>
+    </div>
+  </section>
+
+  <!-- CUENTA -->
+  <section id="tab-resumen" class="tab">
+    <div id="resHead"></div>
+    <div class="kpis" id="summary"></div>
+    <div id="resBody"></div>
+  </section>
+
+  <section id="tab-cuenta" class="tab"><div id="cuenta"><p class="muted">Cargando…</p></div></section>
+
+  <!-- INSUMOS -->
+  <section id="tab-insumos" class="tab">
+    <div class="cols">
+      <div class="card">
+        <h3>Cargar material del cliente</h3>
+        <p class="muted">Todo se guarda en <code>inputs/</code> del proyecto. Las skills lo leen de ahí.</p>
+        <label>Carpeta destino
+          <select id="upDir"><option value="documentos">documentos</option><option value="audio">audio</option><option value="imagenes">imagenes</option></select>
+        </label>
+        <div id="drop" class="drop">Arrastra archivos aquí o <label class="link">elígelos<input type="file" id="upFile" multiple hidden></label></div>
+        <label>O indica la ruta de un archivo o carpeta en este equipo
+          <div class="row"><input id="impPath" placeholder="C:\clientes\acme\docs  o  ~/Descargas/audio.m4a"><button id="impBtn" class="primary">Copiar</button></div>
+        </label>
+        <div id="upMsg" class="muted" role="status" aria-live="polite"></div>
+        <h4>En inputs/</h4>
+        <div id="inputsList" class="list"></div>
+      </div>
+      <div class="card">
+        <h3>Fuentes externas (sources.md)</h3>
+        <p class="muted">Repositorios, consultas de Jira, enlaces y la URL del entorno de pruebas. Lo lee <code>ingest-sources</code>.</p>
+        <textarea id="sources" rows="16" spellcheck="false" placeholder="Disponible cuando el proyecto esté inicializado"></textarea>
+        <div class="row"><button id="srcSave" class="primary">Guardar sources.md</button><span id="srcMsg" class="muted"></span></div>
+      </div>
+    </div>
+  </section>
+</main>
+</div>
+</div>
+
+<!-- Panel lateral de ejecución de una skill -->
+<aside class="drawer" id="drawer" role="dialog" aria-modal="false" aria-label="Panel del paso" hidden>
+  <button class="x" id="dClose" aria-label="Cerrar">×</button>
+  <div id="dBody"></div>
+</aside>
+
+<div class="modal" id="modal" hidden><div class="mbox" id="mbox" role="dialog" aria-modal="true" aria-label="Ventana"></div></div>
+
+<script src="/app.js" type="module"></script>
+</body>
+</html>

@@ -1,0 +1,748 @@
+{
+  "version": "1.10",
+  "descripcion": "Manifiesto del pipeline. Cada paso declara de qué depende, qué documentos del context pack lee, qué decisiones necesita y si actúa sobre sistemas reales. Lo leen pipeline.py y todas las skills. Las skills se invocan con el prefijo del plugin, por ejemplo /delivery:pipeline-status.",
+  "pasos": [
+    {
+      "id": "00-context-pack",
+      "nombre": "Context pack",
+      "skill": "generate-context-pack",
+      "depende_de": [],
+      "opcional": false,
+      "alcance": "proyecto",
+      "lee_context_pack": [],
+      "decisiones_requeridas": [],
+      "efectos_reales": false
+    },
+    {
+      "id": "01-proposal",
+      "nombre": "Cotización o propuesta comercial",
+      "skill": "generate-proposal",
+      "depende_de": [
+        "00-context-pack"
+      ],
+      "opcional": true,
+      "alcance": "proyecto",
+      "lee_context_pack": [
+        "customer-background.md",
+        "scope.md",
+        "business-processes.md",
+        "constraints.md",
+        "commercial.md",
+        "risks.md",
+        "integrations.md",
+        "tech-policy.md"
+      ],
+      "decisiones_requeridas": [
+        "comercial.modelo_contratacion",
+        "comercial.moneda"
+      ],
+      "efectos_reales": false
+    },
+    {
+      "id": "02-user-stories",
+      "nombre": "Historias de usuario",
+      "skill": "generate-user-stories",
+      "depende_de": [
+        "00-context-pack"
+      ],
+      "opcional": false,
+      "alcance": "lote",
+      "lee_context_pack": [
+        "customer-background.md",
+        "scope.md",
+        "domain.md",
+        "business-processes.md",
+        "constraints.md",
+        "ux-design.md"
+      ],
+      "decisiones_requeridas": [
+        "historias.formato"
+      ],
+      "efectos_reales": false
+    },
+    {
+      "id": "02a-test-plan",
+      "nombre": "Plan y estrategia de pruebas",
+      "skill": "generate-test-plan",
+      "depende_de": [
+        "02-user-stories"
+      ],
+      "opcional": true,
+      "alcance": "proyecto",
+      "lee_context_pack": [
+        "scope.md",
+        "domain.md",
+        "business-processes.md",
+        "constraints.md",
+        "risks.md",
+        "security.md",
+        "test-standards.md",
+        "test-severity-priority.md",
+        "test-data-policy.md",
+        "automation-standards.md",
+        "environments.md"
+      ],
+      "decisiones_requeridas": [],
+      "efectos_reales": false
+    },
+    {
+      "id": "03-test-cases",
+      "nombre": "Casos de prueba",
+      "skill": "generate-test-cases",
+      "depende_de": [
+        "02-user-stories",
+        "02a-test-plan"
+      ],
+      "opcional": false,
+      "alcance": "lote",
+      "lee_context_pack": [
+        "domain.md",
+        "business-processes.md",
+        "constraints.md",
+        "test-standards.md",
+        "test-data-policy.md",
+        "test-severity-priority.md"
+      ],
+      "decisiones_requeridas": [
+        "pruebas.formato_casos"
+      ],
+      "efectos_reales": false
+    },
+    {
+      "id": "04-coverage",
+      "nombre": "Análisis de cobertura US/TC",
+      "skill": "analyze-coverage",
+      "depende_de": [
+        "02-user-stories",
+        "03-test-cases",
+        "02a-test-plan"
+      ],
+      "opcional": false,
+      "alcance": "lote",
+      "lee_context_pack": [
+        "test-standards.md"
+      ],
+      "decisiones_requeridas": [],
+      "efectos_reales": false
+    },
+    {
+      "id": "05-ux-design-system",
+      "nombre": "UX design system",
+      "skill": "generate-design-system",
+      "depende_de": [
+        "02-user-stories"
+      ],
+      "opcional": true,
+      "alcance": "proyecto",
+      "lee_context_pack": [
+        "ux-design.md",
+        "customer-background.md"
+      ],
+      "decisiones_requeridas": [
+        "ux.herramienta",
+        "ux.libreria_componentes"
+      ],
+      "efectos_reales": false
+    },
+    {
+      "id": "06-sprint-planning",
+      "nombre": "Sprint planning",
+      "skill": "plan-sprint",
+      "depende_de": [
+        "02-user-stories"
+      ],
+      "opcional": true,
+      "alcance": "proyecto",
+      "lee_context_pack": [
+        "scope.md",
+        "constraints.md",
+        "commercial.md",
+        "risks.md"
+      ],
+      "decisiones_requeridas": [
+        "planeacion.duracion_sprint",
+        "planeacion.capacidad_equipo"
+      ],
+      "efectos_reales": false
+    },
+    {
+      "id": "07-architecture",
+      "nombre": "Plan de arquitectura y módulos",
+      "skill": "design-architecture",
+      "depende_de": [
+        "02-user-stories"
+      ],
+      "opcional": false,
+      "alcance": "proyecto",
+      "lee_context_pack": [
+        "arch-standards.md",
+        "tech-policy.md",
+        "integrations.md",
+        "infrastructure.md",
+        "constraints.md",
+        "codebase-map.md",
+        "data-model.md"
+      ],
+      "decisiones_requeridas": [
+        "tecnologia.backend",
+        "tecnologia.frontend",
+        "tecnologia.hosting"
+      ],
+      "efectos_reales": false
+    },
+    {
+      "id": "07a-api-contracts",
+      "nombre": "Contratos de API",
+      "skill": "design-api-contracts",
+      "depende_de": [
+        "07-architecture"
+      ],
+      "opcional": true,
+      "alcance": "proyecto",
+      "lee_context_pack": [
+        "domain.md",
+        "security.md",
+        "integrations.md",
+        "coding-standards.md",
+        "tech-policy.md"
+      ],
+      "decisiones_requeridas": [
+        "api.estilo",
+        "api.versionado"
+      ],
+      "efectos_reales": false
+    },
+    {
+      "id": "07b-integrations",
+      "nombre": "Diseño de integraciones",
+      "skill": "design-integration",
+      "depende_de": [
+        "07-architecture"
+      ],
+      "opcional": true,
+      "alcance": "integracion",
+      "lee_context_pack": [
+        "integrations.md",
+        "security.md",
+        "infrastructure.md",
+        "data-model.md",
+        "constraints.md"
+      ],
+      "decisiones_requeridas": [],
+      "efectos_reales": false
+    },
+    {
+      "id": "08-db-schema",
+      "nombre": "Esquema de base de datos",
+      "skill": "design-db-schema",
+      "depende_de": [
+        "07-architecture",
+        "07a-api-contracts"
+      ],
+      "opcional": false,
+      "alcance": "proyecto",
+      "lee_context_pack": [
+        "domain.md",
+        "data-model.md",
+        "tech-policy.md"
+      ],
+      "decisiones_requeridas": [
+        "tecnologia.base_datos"
+      ],
+      "efectos_reales": false
+    },
+    {
+      "id": "09-security-review",
+      "nombre": "Análisis de seguridad de arquitectura y DB",
+      "skill": "review-security",
+      "depende_de": [
+        "07-architecture",
+        "07a-api-contracts",
+        "07b-integrations",
+        "08-db-schema"
+      ],
+      "opcional": false,
+      "alcance": "proyecto",
+      "lee_context_pack": [
+        "security.md",
+        "integrations.md",
+        "infrastructure.md",
+        "data-model.md"
+      ],
+      "decisiones_requeridas": [],
+      "efectos_reales": false
+    },
+    {
+      "id": "10-development",
+      "nombre": "Desarrollo de código",
+      "skill": "implement-code",
+      "depende_de": [
+        "05-ux-design-system",
+        "06-sprint-planning",
+        "07-architecture",
+        "07a-api-contracts",
+        "07b-integrations",
+        "08-db-schema",
+        "09-security-review"
+      ],
+      "opcional": false,
+      "alcance": "lote",
+      "lee_context_pack": [
+        "coding-standards.md",
+        "tech-policy.md",
+        "codebase-map.md",
+        "arch-standards.md",
+        "security.md",
+        "ux-design.md",
+        "validation-tools.md",
+        "environments.md",
+        "infrastructure.md",
+        "integrations.md",
+        "data-model.md"
+      ],
+      "decisiones_requeridas": [
+        "repositorio.codigo",
+        "repositorio.modelo_ramas",
+        "repositorio.rama_por",
+        "desarrollo.gestor_paquetes"
+      ],
+      "efectos_reales": true
+    },
+    {
+      "id": "10a-code-review",
+      "nombre": "Revisión de código",
+      "skill": "review-code",
+      "depende_de": [
+        "10-development"
+      ],
+      "opcional": false,
+      "alcance": "lote",
+      "lee_context_pack": [
+        "coding-standards.md",
+        "security.md",
+        "test-standards.md",
+        "validation-tools.md"
+      ],
+      "decisiones_requeridas": [],
+      "efectos_reales": false
+    },
+    {
+      "id": "10b-security-audit",
+      "nombre": "Auditoría de seguridad del código",
+      "skill": "audit-code-security",
+      "depende_de": [],
+      "opcional": true,
+      "alcance": "proyecto",
+      "lee_context_pack": [
+        "security.md",
+        "coding-standards.md",
+        "tech-policy.md",
+        "data-model.md",
+        "infrastructure.md",
+        "environments.md",
+        "validation-tools.md",
+        "test-severity-priority.md"
+      ],
+      "decisiones_requeridas": [],
+      "efectos_reales": true
+    },
+    {
+      "id": "11-dev-validation",
+      "nombre": "Validación del desarrollo contra los TC",
+      "skill": "validate-development",
+      "depende_de": [
+        "10-development",
+        "10a-code-review",
+        "03-test-cases"
+      ],
+      "opcional": false,
+      "alcance": "lote",
+      "lee_context_pack": [
+        "test-standards.md",
+        "test-data-policy.md",
+        "infrastructure.md",
+        "environments.md",
+        "test-severity-priority.md",
+        "validation-tools.md"
+      ],
+      "decisiones_requeridas": [
+        "entornos.validacion"
+      ],
+      "efectos_reales": false
+    },
+    {
+      "id": "12-cicd-code",
+      "nombre": "CI/CD del código",
+      "skill": "setup-cicd-code",
+      "depende_de": [
+        "10-development"
+      ],
+      "opcional": false,
+      "alcance": "proyecto",
+      "lee_context_pack": [
+        "infrastructure.md",
+        "tech-policy.md",
+        "coding-standards.md",
+        "security.md",
+        "validation-tools.md",
+        "environments.md"
+      ],
+      "decisiones_requeridas": [
+        "cicd.plataforma",
+        "repositorio.modelo_ramas"
+      ],
+      "efectos_reales": true
+    },
+    {
+      "id": "13-automation-candidates",
+      "nombre": "Candidatos a automatización",
+      "skill": "select-automation-candidates",
+      "depende_de": [
+        "03-test-cases",
+        "02a-test-plan"
+      ],
+      "opcional": false,
+      "alcance": "lote",
+      "lee_context_pack": [
+        "test-standards.md",
+        "tech-policy.md",
+        "automation-standards.md"
+      ],
+      "decisiones_requeridas": [],
+      "efectos_reales": false
+    },
+    {
+      "id": "14-web-exploration",
+      "nombre": "Exploración web y selectores",
+      "skill": "explore-web-app",
+      "depende_de": [
+        "13-automation-candidates"
+      ],
+      "opcional": false,
+      "alcance": "lote",
+      "lee_context_pack": [
+        "ux-design.md",
+        "test-data-policy.md",
+        "infrastructure.md",
+        "security.md",
+        "environments.md",
+        "automation-standards.md"
+      ],
+      "decisiones_requeridas": [
+        "exploracion.url_base",
+        "exploracion.autenticacion"
+      ],
+      "efectos_reales": true
+    },
+    {
+      "id": "15-automation-framework",
+      "nombre": "Framework de automatización web",
+      "skill": "scaffold-automation-framework",
+      "depende_de": [
+        "13-automation-candidates",
+        "14-web-exploration",
+        "02a-test-plan"
+      ],
+      "opcional": false,
+      "alcance": "proyecto",
+      "lee_context_pack": [
+        "tech-policy.md",
+        "test-standards.md",
+        "coding-standards.md",
+        "infrastructure.md",
+        "test-data-policy.md",
+        "automation-standards.md",
+        "environments.md",
+        "validation-tools.md"
+      ],
+      "decisiones_requeridas": [
+        "automatizacion.framework",
+        "automatizacion.lenguaje",
+        "automatizacion.repositorio",
+        "automatizacion.patron"
+      ],
+      "efectos_reales": true
+    },
+    {
+      "id": "16-automation-tests",
+      "nombre": "Desarrollo de TC automatizados",
+      "skill": "automate-test-cases",
+      "depende_de": [
+        "07a-api-contracts",
+        "14-web-exploration",
+        "15-automation-framework"
+      ],
+      "opcional": false,
+      "alcance": "lote",
+      "lee_context_pack": [
+        "test-standards.md",
+        "test-data-policy.md",
+        "coding-standards.md",
+        "automation-standards.md",
+        "environments.md"
+      ],
+      "decisiones_requeridas": [
+        "automatizacion.framework",
+        "automatizacion.lenguaje",
+        "automatizacion.repositorio"
+      ],
+      "efectos_reales": true
+    },
+    {
+      "id": "17-automation-run",
+      "nombre": "Ejecución de TC automatizados",
+      "skill": "run-automated-tests",
+      "depende_de": [
+        "16-automation-tests"
+      ],
+      "opcional": false,
+      "alcance": "lote",
+      "lee_context_pack": [
+        "infrastructure.md",
+        "test-data-policy.md",
+        "test-standards.md",
+        "automation-standards.md",
+        "environments.md",
+        "test-severity-priority.md"
+      ],
+      "decisiones_requeridas": [
+        "entornos.ejecucion_automatizada"
+      ],
+      "efectos_reales": true
+    },
+    {
+      "id": "18-defect-report",
+      "nombre": "Reporte de errores",
+      "skill": "report-defects",
+      "depende_de": [
+        "03-test-cases"
+      ],
+      "opcional": false,
+      "alcance": "lote",
+      "lee_context_pack": [
+        "test-standards.md",
+        "infrastructure.md",
+        "test-severity-priority.md"
+      ],
+      "decisiones_requeridas": [
+        "defectos.herramienta"
+      ],
+      "efectos_reales": false
+    },
+    {
+      "id": "19-cicd-automation",
+      "nombre": "CI/CD de la automatización",
+      "skill": "setup-cicd-automation",
+      "depende_de": [
+        "16-automation-tests",
+        "17-automation-run"
+      ],
+      "opcional": false,
+      "alcance": "proyecto",
+      "lee_context_pack": [
+        "infrastructure.md",
+        "tech-policy.md",
+        "security.md",
+        "automation-standards.md",
+        "environments.md",
+        "validation-tools.md"
+      ],
+      "decisiones_requeridas": [
+        "cicd.plataforma"
+      ],
+      "efectos_reales": true
+    }
+  ],
+  "context_pack": {
+    "carpeta": "context-pack",
+    "documentos": [
+      {
+        "archivo": "context-pack-index.md",
+        "grupo": "navegación",
+        "gobierna": "Índice: qué documento leer y cuándo"
+      },
+      {
+        "archivo": "active-context.md",
+        "grupo": "navegación",
+        "gobierna": "Estado actual del proyecto (lo genera pipeline.py)"
+      },
+      {
+        "archivo": "customer-background.md",
+        "grupo": "negocio",
+        "gobierna": "Cliente, objetivos de negocio, stakeholders, usuarios y métricas de éxito"
+      },
+      {
+        "archivo": "scope.md",
+        "grupo": "negocio",
+        "gobierna": "Alcance, fuera de alcance, módulos y supuestos"
+      },
+      {
+        "archivo": "domain.md",
+        "grupo": "negocio",
+        "gobierna": "Glosario, entidades, reglas de negocio e invariantes"
+      },
+      {
+        "archivo": "business-processes.md",
+        "grupo": "negocio",
+        "gobierna": "Procesos actuales y futuros, flujos críticos y roles"
+      },
+      {
+        "archivo": "constraints.md",
+        "grupo": "negocio",
+        "gobierna": "Restricciones de plazo, presupuesto, regulación, técnica y operación"
+      },
+      {
+        "archivo": "commercial.md",
+        "grupo": "negocio",
+        "gobierna": "Insumos para cotizar: modelo de contratación, equipo, tarifas y supuestos de estimación"
+      },
+      {
+        "archivo": "risks.md",
+        "grupo": "negocio",
+        "gobierna": "Riesgos, dependencias y mitigaciones"
+      },
+      {
+        "archivo": "ux-design.md",
+        "grupo": "producto",
+        "gobierna": "Journeys, pantallas, marca, accesibilidad y dispositivos"
+      },
+      {
+        "archivo": "tech-policy.md",
+        "grupo": "técnico",
+        "gobierna": "Stack aprobado, versiones, librerías y herramientas permitidas"
+      },
+      {
+        "archivo": "arch-standards.md",
+        "grupo": "técnico",
+        "gobierna": "Estilo de arquitectura, capas y patrones (existente o propuesto)"
+      },
+      {
+        "archivo": "codebase-map.md",
+        "grupo": "técnico",
+        "gobierna": "Mapa e inventario de repositorios: estructura, módulos, tipos clave y dónde vive cada cosa"
+      },
+      {
+        "archivo": "integrations.md",
+        "grupo": "técnico",
+        "gobierna": "Sistemas externos, APIs, protocolos y dueños"
+      },
+      {
+        "archivo": "data-model.md",
+        "grupo": "técnico",
+        "gobierna": "Datos del negocio: entidades, fuentes, volúmenes, retención y migración"
+      },
+      {
+        "archivo": "coding-standards.md",
+        "grupo": "técnico",
+        "gobierna": "Convenciones de código, buenas prácticas y manejo de configuración"
+      },
+      {
+        "archivo": "infrastructure.md",
+        "grupo": "técnico",
+        "gobierna": "Hosting, topología, CI/CD actual y observabilidad"
+      },
+      {
+        "archivo": "environments.md",
+        "grupo": "técnico",
+        "gobierna": "Ambientes, URLs, cuentas de prueba por rol, navegadores y dispositivos, configuración y banderas de funcionalidad"
+      },
+      {
+        "archivo": "validation-tools.md",
+        "grupo": "técnico",
+        "gobierna": "Comandos verificados de compilación, pruebas, lint, tipos y seguridad, y qué compuertas existen hoy en CI"
+      },
+      {
+        "archivo": "security.md",
+        "grupo": "técnico",
+        "gobierna": "Autenticación, autorización, datos sensibles y cumplimiento"
+      },
+      {
+        "archivo": "test-standards.md",
+        "grupo": "calidad",
+        "gobierna": "Proceso de QA, niveles y tipos de prueba, formato de casos, criterios de entrada y salida y herramientas"
+      },
+      {
+        "archivo": "test-severity-priority.md",
+        "grupo": "calidad",
+        "gobierna": "Escalas de severidad y prioridad, relación entre ambas, escalamientos, tiempos de atención y qué bloquea una entrega"
+      },
+      {
+        "archivo": "test-data-policy.md",
+        "grupo": "calidad",
+        "gobierna": "Origen, anonimización y limpieza de datos de prueba"
+      },
+      {
+        "archivo": "automation-standards.md",
+        "grupo": "calidad",
+        "gobierna": "Estado actual de la automatización, framework, localizadores, esperas y reintentos, convenciones, reportes y alcance excluido"
+      },
+      {
+        "archivo": "decisions.md",
+        "grupo": "gobierno",
+        "gobierna": "Registro de decisiones (DEC-NNN), incluidas las de herramientas"
+      },
+      {
+        "archivo": "open-questions.md",
+        "grupo": "gobierno",
+        "gobierna": "Preguntas abiertas (OQ-NNN) y sus respuestas"
+      }
+    ],
+    "anclas": [
+      "customer-background.md",
+      "scope.md",
+      "domain.md"
+    ],
+    "tanda_max": 5,
+    "perfiles": [
+      {
+        "id": "preventa",
+        "nombre": "Preventa y propuesta",
+        "pasos": [
+          "01-proposal",
+          "06-sprint-planning"
+        ]
+      },
+      {
+        "id": "historias-pruebas",
+        "nombre": "Historias y casos de prueba",
+        "pasos": [
+          "02-user-stories",
+          "02a-test-plan",
+          "03-test-cases",
+          "04-coverage",
+          "18-defect-report"
+        ]
+      },
+      {
+        "id": "automatizacion",
+        "nombre": "Automatización de pruebas",
+        "pasos": [
+          "13-automation-candidates",
+          "14-web-exploration",
+          "15-automation-framework",
+          "16-automation-tests",
+          "17-automation-run",
+          "19-cicd-automation"
+        ]
+      },
+      {
+        "id": "construccion",
+        "nombre": "Diseño, arquitectura y desarrollo",
+        "pasos": [
+          "05-ux-design-system",
+          "07-architecture",
+          "07a-api-contracts",
+          "07b-integrations",
+          "08-db-schema",
+          "09-security-review",
+          "10-development",
+          "10a-code-review",
+          "10b-security-audit",
+          "11-dev-validation",
+          "12-cicd-code"
+        ]
+      }
+    ]
+  },
+  "prefijo_comandos": "/delivery:"
+}
