@@ -22,7 +22,7 @@
   ],
   "maxTurns": null,
   "navegador": {
-    "canal": "chrome",
+    "canal": "auto",
     "verVentana": false
   }
 }
