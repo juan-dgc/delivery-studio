@@ -30,13 +30,9 @@ Sigue `.pipeline/protocolo.md`, en especial "Navegador".
 
 ## 1. Requisitos
 
-Este paso necesita el MCP de Playwright: herramientas con nombres como `browser_navigate`, `browser_snapshot`, `browser_click`, `browser_take_screenshot`, `browser_evaluate`. Si no las tienes, detente y explica al usuario cómo instalarlo, en su terminal y fuera de la sesión:
+Este paso necesita el MCP de Playwright: herramientas con nombres como `browser_navigate`, `browser_snapshot`, `browser_click`, `browser_take_screenshot`. **Tú conduces el navegador**: no le pidas al usuario que abra páginas, que copie direcciones ni que ejecute Playwright en una terminal.
 
-```bash
-claude mcp add playwright -s user -- npx @playwright/mcp@latest
-```
-
-Necesita Node.js. Después debe abrir una sesión nueva. Con `/mcp` puede comprobar que `playwright` aparece conectado.
+Las aplicaciones que ejecutan este pipeline suelen traer el navegador puesto. Si al empezar no tienes ninguna herramienta `browser_*`, el entorno no te dio navegador: dilo con claridad, indica que el paso no puede explorar sin él y ofrece el modo manual (el usuario recorre la aplicación y te describe lo que ve). Solo si el usuario trabaja desde una terminal con Claude Code, el MCP se añade con `claude mcp add playwright -s user -- npx @playwright/mcp@latest` y una sesión nueva; en una aplicación de escritorio esa instrucción no aplica.
 
 ## 2. Preflight
 
@@ -50,11 +46,10 @@ Lee la sección `## Seleccionados` de `automation-candidates.md` y quédate con 
 ## 3. Preguntar lo que falte
 
 1. **URL base** (`exploracion.url_base`): de un entorno de desarrollo, pruebas o staging. Si `environments.md` ya lista los ambientes, propón el de pruebas y no preguntes lo que ahí esté confirmado (roles de prueba, navegadores, restricciones de acceso). Si parece producción, pide confirmación explícita y recuerda que en ese caso no se ejecuta ninguna acción que cambie datos.
-2. **Autenticación** (`exploracion.autenticacion`):
-   - **manual** (recomendada): abres la página de inicio de sesión en la ventana visible y el usuario entra con su cuenta de prueba; tú esperas su aviso para seguir.
-   - **sesión guardada**: el usuario indica un archivo de estado de sesión de Playwright ya creado.
+2. **Autenticación** (`exploracion.autenticacion`): antes de preguntar nada, abre la URL base y mira. El perfil del navegador vive en el proyecto, así que puede haber una sesión de una corrida anterior y ya estar dentro. Si lo estás, sigue sin preguntar.
+   - **manual** (lo normal la primera vez): abre la página de inicio de sesión en la ventana visible y el usuario entra con su cuenta de prueba; tú esperas su aviso para seguir. A partir de ahí la sesión queda guardada en el perfil y las corridas siguientes entran solas.
    - **sin autenticación**.
-   Nunca pidas ni escribas contraseñas.
+   Nunca pidas ni escribas contraseñas, y no mandes al usuario a crear archivos de credenciales: esa es cosa del paso 16, cuando la suite tenga que ejecutarse sola.
 3. **Roles a explorar**: si hay casos de permisos, qué roles y cuentas de prueba existen. Cada rol requiere un inicio de sesión distinto.
 4. **Acciones que cambian datos**: si el entorno es de pruebas, ¿se permite ejecutar los pasos que crean o modifican registros para validar los casos completos? Si no, la validación de esos pasos queda como "no verificado".
 

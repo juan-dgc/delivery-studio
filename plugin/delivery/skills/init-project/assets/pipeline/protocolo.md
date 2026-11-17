@@ -194,7 +194,8 @@ Los pasos de desarrollo, CI/CD y automatización trabajan en repositorios fuera 
 Los pasos que operan una aplicación web (exploración, validación, ejecución asistida) usan el MCP de Playwright si está disponible.
 
 - Solo contra entornos que el usuario autorice para este fin (desarrollo, pruebas, staging). Si la URL parece de producción, pregunta antes de abrirla.
-- El inicio de sesión lo hace el usuario en la ventana visible del navegador, o se usa un archivo de sesión guardado que él proporcione. Nunca pidas contraseñas en el chat ni las escribas en archivos.
+- El inicio de sesión lo hace el usuario en la ventana visible del navegador, o se usa la sesión que quedó guardada en el perfil del proyecto. Nunca pidas contraseñas en el chat ni las escribas en archivos. Si el navegador está sin ventana y hace falta iniciar sesión, dilo y pide que se repita el paso con la ventana visible: en la aplicación hay una casilla para ello.
+- **Navega por la interfaz, no por la barra de direcciones.** Escribe la URL una sola vez, para llegar a la pantalla inicial. A partir de ahí muévete como lo haría una persona: menús, botones y enlaces. Saltar a una URL interna reinicia el estado de muchas aplicaciones y en algunas cierra la sesión, así que lo que descubras así no representa el camino real del usuario. Si una pantalla solo se alcanza por URL, dilo y anótalo como hallazgo.
 - No ejecutes acciones que creen, modifiquen o borren datos (enviar formularios, pagar, eliminar) salvo que el paso lo requiera, el entorno sea de pruebas y el usuario lo apruebe.
 
 ## Pasos con efectos reales

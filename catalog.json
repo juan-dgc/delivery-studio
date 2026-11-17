@@ -254,7 +254,8 @@
    "insumo": "Código y casos",
    "produce": "Resultados por caso de prueba",
    "arg": "[sprint]",
-   "tier": "medio"
+   "tier": "medio",
+   "navegador": true
   },
   {
    "skill": "setup-cicd-code",
@@ -286,7 +287,8 @@
    "insumo": "Candidatos y URL del entorno",
    "produce": "selectors.json y mapa de páginas",
    "arg": "[lote]",
-   "tier": "medio"
+   "tier": "medio",
+   "navegador": true
   },
   {
    "skill": "scaffold-automation-framework",

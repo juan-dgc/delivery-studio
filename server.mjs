@@ -226,7 +226,7 @@ async function route(req, res, url) {
       runs.resetApprovals([...dep], claveAprobacion(cfg, ROOT, b.skill, b.args).alcance);
     }
     const model = cfg.models.some((x) => x.id === b.model) ? b.model : cfg.defaultModel;
-    const out = runs.start({ skill: b.skill, args: b.args, instruction: b.instruction, model, approval: b.approval, title: sk.nombre });
+    const out = runs.start({ skill: b.skill, args: b.args, instruction: b.instruction, model, approval: b.approval, title: sk.nombre, verNavegador: !!b.verNavegador });
     invalidarStatus();
     return json(res, 200, out);
     });

@@ -795,6 +795,7 @@ async function openDrawer(skillId) {
       <option value="preguntar" ${s.efectosReales ? 'selected' : ''}>Preguntar antes de cada comando</option>
     </select></label>
     ${s.listo ? '' : `<p class="lockmsg"><span class="lockic"></span>Este paso está bloqueado: completa y aprueba los pasos previos para poder ejecutarlo.</p>`}
+    ${s.navegador ? `<label class="check" title="La exploración va más rápida sin ventana y no te quita el foco. La primera vez, si hace falta iniciar sesión, la skill abre la ventana igualmente."><input type="checkbox" id="dVer"> Ver el navegador mientras explora</label>` : ''}
     <div class="row"><button class="primary" id="dRun" ${!S.auth?.loggedIn || !s.listo || S.runs.some((r) => r.status === 'running' && r.skill === s.skill) ? 'disabled' : ''} ${!S.auth?.loggedIn ? 'title="Primero inicia sesión con tu cuenta de Claude"' : ''}>${isDone(s) && !s.activa ? 'Repetir paso' : 'Ejecutar'}</button>${s.opcional && s.paso ? `<button id="dSkip" class="ghost">${s.estado === 'OMITIDO' ? 'Reactivar este paso' : 'Omitir este paso'}</button>` : ''}<span id="dMsg" class="muted">${!S.auth?.loggedIn ? '<span class="nosesion">Sin sesión de Claude: inicia sesión arriba a la derecha.</span>' : ''}</span></div>`;
   $('#drawer').hidden = false;
   ($('#dBody').querySelector(FOCO) || $('#dClose')).focus?.();
@@ -817,7 +818,7 @@ async function openDrawer(skillId) {
     try {
       const run = await api('/api/run', {
         skill: s.skill, args, instruction: $('#dInstr').value, model: $('#dModel').value,
-        approval: $('#dAppr').value, reset: rr.reset,
+        approval: $('#dAppr').value, reset: rr.reset, verNavegador: $('#dVer')?.checked || false,
       });
       cerrarDrawer();
       await loadRuns(); switchTab('ejecucion'); await selectRun(run.id);
