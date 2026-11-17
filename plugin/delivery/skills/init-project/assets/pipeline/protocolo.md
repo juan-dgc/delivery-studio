@@ -25,6 +25,10 @@ Reglas de guardado, sin excepción:
 - No pegues el contenido completo de un documento en el chat. Muestra un resumen y el enlace.
 - Si por una limitación del entorno no pudiste escribir en la carpeta del proyecto, no lo disimules: dilo con claridad, di dónde quedó el archivo y cierra la corrida como PARCIAL.
 
+Regla de lectura:
+
+- **Para leer archivos usa tu herramienta de lectura, no la terminal.** Abrir un documento con `cat`, `head` o `sed` por la terminal hace lo mismo pero, en los entornos que piden permiso por cada comando, obliga al usuario a autorizar cada lectura. La terminal se reserva para los scripts del pipeline (`.pipeline/scripts/`) y para lo que de verdad necesita el sistema operativo. Para encontrar archivos, tus herramientas de búsqueda por nombre y por contenido; para leer varios, varias lecturas.
+
 ## 1. Preflight
 
 Ejecuta desde la raíz del proyecto:
