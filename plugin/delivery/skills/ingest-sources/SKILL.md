@@ -46,13 +46,43 @@ Conserva los IDs de los hechos existentes, porque el context pack ya los cita; l
 
 ## 2. Plan y permisos
 
-Muestra una tabla con lo que vas a procesar: fuente, tipo, cómo se procesará y si requiere algo del usuario. Pide confirmación. Pide permiso explícito, por separado, para:
+Muestra una tabla con lo que vas a procesar: fuente, tipo, cómo se procesará y si requiere algo del usuario. Pide confirmación. En esa misma confirmación pregunta **cómo quiere acompañar el trabajo**, con el selector de preguntas de la aplicación si está disponible:
+
+- **Seguir hasta terminar** (recomendado): avisas el avance al cerrar cada tanda y continúas sin preguntar. Solo te detienes si aparece algo que de verdad necesita decidirse: una fuente ilegible o vacía, un permiso nuevo, una contradicción entre fuentes o un dato sensible que convenga omitir.
+- **Consultar cada tanda**: te detienes al cerrar cada tanda y esperas su respuesta.
+
+Esta es la única pregunta de ritmo de toda la corrida: no la repitas más adelante. Con el registro de la sección 3, interrumpir y retomar no cuesta trabajo perdido, así que detenerse por costumbre solo gasta el tiempo del usuario.
+
+Pide permiso explícito, por separado, para:
 
 - Instalar un motor de transcripción si no existe (`pip install faster-whisper`).
 - Clonar repositorios (se clonan en `inputs/repos/<nombre>`, en solo lectura de hecho: no se crean ramas ni commits).
 - Consultar Jira con el conector de Atlassian. Si el conector no está disponible, dilo y sugiere conectarlo; no pidas exportes manuales salvo que el usuario lo prefiera.
 
 ## 3. Método: una fuente a la vez, completa
+
+**Dónde se escribe, y en ningún otro sitio.** Esta skill solo crea o modifica estos archivos:
+
+- `evidence/EV-NNN-<slug>.md`: la evidencia de cada fuente.
+- `evidence/_texto/` y `evidence/_transcripciones/`: las copias de consulta.
+- `evidence/_index.md`: el índice.
+
+Está **prohibido** crear cualquier otra carpeta o archivo de trabajo: nada de `_borrador/`,
+`_temp/`, `_wip/`, carpetas por tanda, por subagente o por letra, ni copias «para revisar antes
+de mover». El archivo de evidencia se escribe directamente en su sitio definitivo desde el primer
+bloque; está incompleto hasta que termines y eso es normal, no es motivo para escribirlo aparte.
+Un archivo fuera de esas rutas no lo ve `check_evidence.py` ni lo encuentra el context pack, así
+que no existe para el resto del pipeline.
+
+**Una fuente, una evidencia, un registro.** Antes de empezar una fuente, mira si ya tiene `EV-NNN`
+en `pipeline.py sources list`: si lo tiene, no la vuelvas a procesar (salvo en modo `ampliar`, que
+escribe sobre el mismo archivo) y nunca le crees un `EV` nuevo. **Al terminar cada fuente**, antes
+de pasar a la siguiente, ejecuta `pipeline.py sources mark` (sección 5). Ese registro es lo único
+que te dice qué está hecho si la conversación se interrumpe o se reanuda: dejarlo para el final es
+lo que hace que la skill vuelva a empezar y repita el trabajo.
+
+**Si te interrumpen y vuelves**, ejecuta `pipeline.py sources list` y continúa por la primera
+fuente sin registrar. No reinicies el inventario ni vuelvas a procesar lo marcado.
 
 Para cada fuente, en este orden:
 
@@ -115,7 +145,9 @@ No envíes formularios que cambien datos (por ejemplo, no completes una recupera
 
 ### Volumen
 
-Con muchas fuentes, trabaja por tandas de tres a cinco fuentes y al terminar cada una muestra el avance y pregunta si continúas, con el selector de preguntas de la aplicación si está disponible. Es preferible terminar bien cinco fuentes que pasar por encima de veinte. Las fuentes independientes también pueden procesarse en paralelo con subagentes: asigna a cada uno un rango de IDs (por ejemplo EV-010 a EV-019) y pásale este método completo y el formato de la sección 4. Tú revisas su cobertura y actualizas el índice y el registro al final.
+Con muchas fuentes, trabaja por tandas de tres a cinco fuentes y al cerrar cada una muestra el avance: cuántas van, cuáles quedan y lo que hayas encontrado que valga la pena saber. Si el usuario eligió seguir hasta terminar, continúa sin preguntar; si eligió consultar, espera su respuesta. Es preferible terminar bien cinco fuentes que pasar por encima de veinte. Cada fuente queda registrada con `sources mark` en cuanto termina, así que al continuar la tanda siguiente empiezas por la primera fuente sin registrar: continuar nunca significa volver a empezar.
+
+Las fuentes independientes también pueden procesarse en paralelo con subagentes: asigna a cada uno un rango de IDs (por ejemplo EV-010 a EV-019) y pásale este método completo y el formato de la sección 4. Cada subagente escribe sus archivos en `evidence/`, con los nombres definitivos de su rango; ninguno crea carpetas propias ni entrega su trabajo en otro sitio para que tú lo muevas después. Tú revisas su cobertura y actualizas el índice al final.
 
 ## 4. Formato de cada evidencia
 
@@ -191,7 +223,7 @@ Compara el tamaño de cada fuente con los hechos extraídos y revisa el mapa. Co
 
 ## 5. Índice y registro
 
-Actualiza `evidence/_index.md`: tabla con id, título, tipo, fuente, confiabilidad y temas. Registra cada fuente procesada:
+Actualiza `evidence/_index.md`: tabla con id, título, tipo, fuente, confiabilidad y temas. El registro de cada fuente se hace al terminarla, no aquí (sección 3); si alguna quedó sin marcar, márcala ahora:
 
 ```bash
 python3 .pipeline/scripts/pipeline.py sources mark <ruta-o-repo:url-o-jira:consulta> EV-NNN

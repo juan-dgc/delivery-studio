@@ -37,7 +37,9 @@ function broadcast(obj) {
 }
 setInterval(() => { for (const c of clients) { try { c.write(': ping\n\n'); } catch { clients.delete(c); } } }, 20000).unref();
 
-const usage = new Usage(path.join(STUDIO_DIR, 'usage.json'), path.basename(ROOT), ROOT);
+// El consumo se guarda dentro del proyecto: al compartir el estudio no viaja el gasto
+// (ni los nombres ni las rutas) de los proyectos anteriores de quien lo armó.
+const usage = new Usage(path.join(ROOT, '.delivery-ui', 'usage.json'), path.basename(ROOT), ROOT);
 const runs = new RunManager({ cfg, root: ROOT, broadcast, usage });
 let loginProc = null;
 
@@ -197,6 +199,19 @@ async function route(req, res, url) {
     const b = await body(req);
     const sk = cfg.catalog.skills.find((s) => s.skill === b.skill);
     if (!sk) return json(res, 400, { error: 'Skill desconocida.' });
+    // Lo primero, siempre: sin sesión la skill no puede trabajar. Se avisa antes de arrancar
+    // para que el paso no quede marcado con un error que no es suyo.
+    {
+      const a = await authStatus(cfg, ROOT);
+      if (!a.loggedIn) {
+        return json(res, 412, {
+          error: cfg.authMode === 'apikey'
+            ? 'Falta ANTHROPIC_API_KEY. Defínela y vuelve a abrir el estudio.'
+            : 'No hay sesión de Claude. Inicia sesión arriba a la derecha y vuelve a ejecutar.',
+          sinSesion: true, modo: cfg.authMode,
+        });
+      }
+    }
     return enSerie(async () => {
     invalidarStatus();
     {

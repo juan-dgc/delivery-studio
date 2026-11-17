@@ -10,6 +10,10 @@ node_modules/
 .delivery-token
 config.local.json
 
+# Consumo: ahora vive dentro de cada proyecto (.delivery-ui/usage.json).
+# Este queda por si hay una copia de la versión anterior; no debe compartirse.
+usage.json
+
 # Variables de entorno y secretos
 .env
 .env.*

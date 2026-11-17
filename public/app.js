@@ -15,7 +15,21 @@ marked.use({
     },
   },
 });
-const md = (t) => marked.parse(String(t ?? ''));
+/**
+ * Las skills nombran sus artefactos con siglas en inglés (OQ, RN, PROC...). Quien no diseñó el
+ * pipeline no tiene por qué saberlas, así que al pintarlas se les pone el nombre en español
+ * encima: el texto no se toca, solo gana una explicación al pasar el cursor.
+ */
+const SIGLAS = {
+  OQ: 'pregunta abierta', EV: 'evidencia', US: 'historia de usuario', EP: 'épica',
+  AC: 'criterio de aceptación', TC: 'caso de prueba', RN: 'regla de negocio',
+  PROC: 'proceso de negocio', MOD: 'módulo', DEF: 'defecto', INT: 'integración',
+  DEC: 'decisión', SC: 'solicitud de cambio', INC: 'incidente', CMP: 'compromiso',
+  R: 'riesgo', AM: 'acción de mejora',
+};
+const RE_SIGLA = new RegExp(`\\b(${Object.keys(SIGLAS).join('|')})-(\\d{2,3}(?:\\.\\d+)?|NNN)\\b`, 'g');
+const explicarSiglas = (html) => html.replace(RE_SIGLA, (m, sig) => `<abbr class="sig" title="${SIGLAS[sig]}">${m}</abbr>`);
+const md = (t) => explicarSiglas(marked.parse(String(t ?? '')));
 const DOC_RE = /^(outputs|context-pack|evidence|inputs)\/[^\s]+\.[A-Za-z0-9]{1,6}$/;
 
 async function api(path, body) {
@@ -125,8 +139,13 @@ function renderBanner() {
   const st = S.state; if (!st) return;
   if (S.loginBusy) return banner(`Inicio de sesión en curso. ${S.authLog.slice(-3).map(esc).join(' · ')}`, false, true);
   if (!st.plugin.ok) return banner(`No encuentro el plugin en ${st.plugin.path}. Ajusta pluginPath en config.json.`, true);
-  // Sin sesión de suscripción no se pone banner: el chip y el botón de arriba ya lo dicen.
-  if (S.auth && !S.auth.loggedIn && S.auth.mode === 'apikey') return banner('Falta la variable ANTHROPIC_API_KEY. Defínela y reinicia el servidor.', true);
+  // Sin sesión ninguna skill puede trabajar: se avisa siempre, no solo con el chip de arriba.
+  if (S.auth && !S.auth.loggedIn) {
+    if (S.auth.mode === 'apikey') return banner('Falta la variable ANTHROPIC_API_KEY. Defínela y reinicia el servidor.', true);
+    banner('No hay sesión de Claude: ningún paso puede ejecutarse hasta que inicies sesión. <button class="primary sm" id="bLogin2">Iniciar sesión</button>', true, true);
+    $('#bLogin2')?.addEventListener('click', async () => { switchTab('cuenta'); await startLogin(); loadCuenta(); });
+    return;
+  }
   if (!st.infra.initialized) return banner('Este proyecto aún no está inicializado. Abre Rutas y ejecuta "Inicializar proyecto".');
   if (st.statusError) return banner(`pipeline.py status falló: ${st.statusError}`, true);
   banner('');
@@ -204,7 +223,7 @@ function renderRutas() {
   const kpi = (l, v, sub = '', cls = '', sm = false) => `<div class="kpi ${cls}"><div class="l">${esc(l)}</div><div class="v ${sm ? 'sm' : ''}">${esc(v)}</div>${sub ? `<div class="s">${esc(sub)}</div>` : ''}</div>`;
   const k = [
     kpi('Insumos', i.inputs, 'archivos en inputs/'),
-    kpi('Evidencias', i.evidence, 'citables (EV-NNN)'),
+    kpi('Evidencias', i.evidence, 'citables, una por fuente'),
     kpi('Preguntas abiertas', r.preguntasAbiertas, r.altoImpacto ? `${r.altoImpacto} de impacto alto` : 'sin impacto alto', r.altoImpacto ? 'warn' : ''),
   ];
   if (r.respondidasSinIncorporar) k.push(kpi('Respondidas sin incorporar', r.respondidasSinIncorporar, 'pendientes de pasar al paquete de contexto', 'info'));
@@ -776,7 +795,7 @@ async function openDrawer(skillId) {
       <option value="preguntar" ${s.efectosReales ? 'selected' : ''}>Preguntar antes de cada comando</option>
     </select></label>
     ${s.listo ? '' : `<p class="lockmsg"><span class="lockic"></span>Este paso está bloqueado: completa y aprueba los pasos previos para poder ejecutarlo.</p>`}
-    <div class="row"><button class="primary" id="dRun" ${!s.listo || S.runs.some((r) => r.status === 'running' && r.skill === s.skill) ? 'disabled' : ''}>${isDone(s) && !s.activa ? 'Repetir paso' : 'Ejecutar'}</button>${s.opcional && s.paso ? `<button id="dSkip" class="ghost">${s.estado === 'OMITIDO' ? 'Reactivar este paso' : 'Omitir este paso'}</button>` : ''}<span id="dMsg" class="muted"></span></div>`;
+    <div class="row"><button class="primary" id="dRun" ${!S.auth?.loggedIn || !s.listo || S.runs.some((r) => r.status === 'running' && r.skill === s.skill) ? 'disabled' : ''} ${!S.auth?.loggedIn ? 'title="Primero inicia sesión con tu cuenta de Claude"' : ''}>${isDone(s) && !s.activa ? 'Repetir paso' : 'Ejecutar'}</button>${s.opcional && s.paso ? `<button id="dSkip" class="ghost">${s.estado === 'OMITIDO' ? 'Reactivar este paso' : 'Omitir este paso'}</button>` : ''}<span id="dMsg" class="muted">${!S.auth?.loggedIn ? '<span class="nosesion">Sin sesión de Claude: inicia sesión arriba a la derecha.</span>' : ''}</span></div>`;
   $('#drawer').hidden = false;
   ($('#dBody').querySelector(FOCO) || $('#dClose')).focus?.();
   $$('#dBody [data-open]').forEach((a) => a.addEventListener('click', () => { cerrarDrawer(); openFolder(a.dataset.open); }));
@@ -803,6 +822,7 @@ async function openDrawer(skillId) {
       cerrarDrawer();
       await loadRuns(); switchTab('ejecucion'); await selectRun(run.id);
     } catch (e) {
+      if (e.data?.sinSesion) return avisoSinSesion(e.message, '#dMsg');
       $('#dMsg').textContent = e.data?.faltan ? `Faltan: ${e.data.faltan.map((f) => f.nombre).join(', ')}` : e.message;
     }
   });
@@ -874,10 +894,10 @@ function renderLog() {
   const head = $('#logHead'), body = $('#logBody');
   const sm = S.curSummary;
   if (!sm) { head.textContent = ''; body.innerHTML = '<p class="muted">Elige una skill en Rutas y pulsa Ejecutar.</p>'; $('#composer').hidden = true; return; }
-  const resolved = new Set(S.events.filter((e) => e.type === 'resolved').map((e) => e.id));
+  const resolved = new Map(S.events.filter((e) => e.type === 'resolved').map((e) => [e.id, e]));
   body.innerHTML = '';
   if (sm.recortado) body.append(el('<div class="tool">Historial largo: se muestra la parte final. El archivo completo está en .delivery-ui/runs/.</div>'));
-  for (const ev of S.events) body.append(...nodesFor(ev, resolved));
+  for (const ev of S.events) colocar(body, ev, nodesFor(ev, resolved));
   renderOptions();
   updateHead();
   body.scrollTop = body.scrollHeight;
@@ -911,6 +931,28 @@ function updateHead() {
 
 function el(html) { const t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstElementChild; }
 
+/**
+ * Varios subagentes trabajando a la vez se leían como un solo hilo que repetía cosas parecidas,
+ * que es justo lo que parece un ciclo. Cada uno tiene ahora su bloque, con su nombre y su cuenta.
+ */
+function colocar(body, ev, nodos) {
+  if (!nodos.length) return;
+  if (ev.type === 'subagente') {
+    const caja = el(`<div class="subbox" data-sub="${esc(ev.subId)}"></div>`);
+    caja.append(...nodos);
+    if (ev.tarea) caja.append(el(`<div class="tool">${esc(ev.tarea)}</div>`));
+    body.append(caja);
+    return;
+  }
+  const caja = ev.subId ? body.querySelector(`.subbox[data-sub="${CSS.escape(ev.subId)}"]`) : null;
+  (caja || body).append(...nodos);
+  if (caja) {
+    const n = caja.querySelectorAll('.tool, .msg').length;
+    const cab = caja.querySelector('.subhead .muted');
+    if (cab) cab.textContent = `${n} paso${n === 1 ? '' : 's'}`;
+  }
+}
+
 function nodesFor(ev, resolved) {
   switch (ev.type) {
     case 'user': {
@@ -922,6 +964,7 @@ function nodesFor(ev, resolved) {
     case 'init': return [el(`<div class="tool">Sesión iniciada${ev.model ? ` · ${esc(ev.model)}` : ''}</div>`)];
     case 'text': return [el(`<div class="msg md ${ev.sub ? 'sub' : ''}">${md(ev.text)}</div>`)];
     case 'tool': return [el(`<div class="tool"><b>${esc(ev.tool)}</b> ${esc(ev.summary)}</div>`)];
+    case 'subagente': return [el(`<div class="subhead" data-sub="${esc(ev.subId)}"><span class="si" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.2"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0"/></svg></span><b>${esc(ev.nombre)}</b><span class="muted">trabaja aparte</span></div>`)];
     case 'tool_error': return [el(`<div class="tool err">${esc(ev.text)}</div>`)];
     case 'stderr': return [el(`<div class="tool err">${esc(ev.text)}</div>`)];
     case 'note': return [el(`<div class="tool">${esc(ev.text)}</div>`)];
@@ -929,11 +972,12 @@ function nodesFor(ev, resolved) {
     case 'error': return [el(`<div class="card2 risky"><h5>Error</h5><div class="msg">${esc(ev.text)}</div></div>`)];
     case 'hint': {
       const txt = ev.kind === 'auth' ? 'No hay sesión de Claude válida. Usa "Iniciar sesión" arriba a la derecha y vuelve a intentar.'
-        : ev.kind === 'limit' ? 'Llegaste a un límite de uso. Espera al reinicio de tu plan o prueba con un modelo más liviano.' : `Aviso: ${ev.text}`;
+        : ev.kind === 'limit' ? 'Llegaste a un límite de uso. Espera al reinicio de tu plan o prueba con un modelo más liviano.'
+        : ev.kind === 'repite' || ev.kind === 'gasto' ? ev.text : `Aviso: ${ev.text}`;
       return [el(`<div class="card2 p"><h5>${esc(txt)}</h5></div>`)];
     }
-    case 'question': return [questionCard(ev, resolved.has(ev.id))];
-    case 'permission': return [permissionCard(ev, resolved.has(ev.id))];
+    case 'question': return [questionCard(ev, resolved.get(ev.id) || null)];
+    case 'permission': return [permissionCard(ev, resolved.get(ev.id) || null)];
     case 'resolved': return [];
     case 'result': return [resultCard(ev)];
     default: return [];
@@ -942,12 +986,16 @@ function nodesFor(ev, resolved) {
 
 function questionCard(ev, done) {
   const live = !done && S.curSummary?.status === 'running';
-  const c = el(`<div class="card2 q" data-qid="${esc(ev.id)}"></div>`);
+  // Ya respondida: la tarjeta pasa a verde y conserva marcado lo que eligió el usuario.
+  const dadas = done?.answers || null, omitida = !!done && !done.answers;
+  const c = el(`<div class="card2 ${dadas ? 'ok' : omitida ? '' : 'q'}" data-qid="${esc(ev.id)}"></div>`);
   (ev.questions || []).forEach((q, qi) => {
     const type = q.multiSelect ? 'checkbox' : 'radio';
+    const resp = dadas ? String(dadas[q.question] ?? '').split(',').map((x) => x.trim()).filter(Boolean) : [];
+    const libres = resp.filter((r) => !(q.options || []).some((o) => o.label === r));
     c.append(el(`<div><h5>${esc(q.header || 'Pregunta')}</h5><div>${esc(q.question)}</div>
-      ${(q.options || []).map((o, oi) => `<label class="opt"><input type="${type}" name="q${qi}" value="${esc(o.label)}" class="auto" ${live ? '' : 'disabled'}> ${esc(o.label)}${o.description ? `<small>${esc(o.description)}</small>` : ''}</label>`).join('')}
-      <label class="opt">Otra respuesta: <input type="text" data-other="${qi}" ${live ? '' : 'disabled'}></label></div>`));
+      ${(q.options || []).map((o) => `<label class="opt ${resp.includes(o.label) ? 'elegida' : ''}"><input type="${type}" name="q${qi}" value="${esc(o.label)}" class="auto" ${resp.includes(o.label) ? 'checked' : ''} ${live ? '' : 'disabled'}> ${esc(o.label)}${o.description ? `<small>${esc(o.description)}</small>` : ''}</label>`).join('')}
+      <label class="opt ${libres.length ? 'elegida' : ''}">Otra respuesta: <input type="text" data-other="${qi}" value="${esc(libres.join(', '))}" ${live ? '' : 'disabled'}></label></div>`));
   });
   if (live) {
     const row = el('<div class="row"><button class="primary">Enviar respuestas</button><button class="ghost" data-skip>Omitir</button><span class="muted" data-msg></span></div>');
@@ -964,7 +1012,7 @@ function questionCard(ev, done) {
       await sendAnswer(ev.id, { answers }, row);
     });
     row.querySelector('[data-skip]').addEventListener('click', () => sendAnswer(ev.id, { skip: true }, row));
-  } else c.append(el('<div class="muted">Respondida.</div>'));
+  } else c.append(el(`<div class="resuelta ${dadas ? 'si' : ''}">${dadas ? '✓ Respuestas enviadas' : omitida ? 'Omitida: no respondiste estas preguntas' : 'Respondida'}</div>`));
   return c;
 }
 
@@ -973,12 +1021,17 @@ function permissionCard(ev, done) {
   const c = el(`<div class="card2 ${ev.risky ? 'risky' : 'p'}" data-qid="${esc(ev.id)}"><h5>${ev.risky ? 'Acción riesgosa: ' : ''}La skill quiere usar ${esc(ev.tool)}</h5><div class="tool pre">${esc(ev.summary)}</div>${ev.reason ? `<div class="muted">${esc(ev.reason)}</div>` : ''}</div>`);
   if (live) {
     const shell = ev.tool === 'Bash' || ev.tool === 'PowerShell';
-    const row = el(`<div class="row"><button class="primary" data-a>Permitir</button>${shell ? '' : '<button data-r>Permitir siempre en esta ejecución</button>'}<button class="danger" data-d>Denegar</button><span class="muted" data-msg></span></div>`);
+    const recordar = shell ? (ev.programa ? `Permitir «${esc(ev.programa)}» siempre en esta ejecución` : '') : 'Permitir siempre en esta ejecución';
+    const row = el(`<div class="row"><button class="primary" data-a>Permitir</button>${recordar ? `<button data-r>${recordar}</button>` : ''}<button class="danger" data-d>Denegar</button><span class="muted" data-msg></span></div>`);
     c.append(row);
     row.querySelector('[data-a]').addEventListener('click', () => sendAnswer(ev.id, { decision: 'allow' }, row));
     row.querySelector('[data-r]')?.addEventListener('click', () => sendAnswer(ev.id, { decision: 'allow', remember: true }, row));
     row.querySelector('[data-d]').addEventListener('click', () => sendAnswer(ev.id, { decision: 'deny' }, row));
-  } else c.append(el('<div class="muted">Resuelta.</div>'));
+  } else {
+    const d = done?.decision;
+    c.append(el(`<div class="resuelta ${d === 'allow' ? 'si' : d === 'deny' ? 'no' : ''}">${d === 'allow' ? '✓ Permitida' : d === 'deny' ? '✕ Denegada' : 'Resuelta'}</div>`));
+    if (d === 'allow') c.classList.add('ok');
+  }
   return c;
 }
 
@@ -1026,8 +1079,18 @@ $('#btnFresh').addEventListener('click', async () => {
   try {
     const run = await api('/api/run', { skill: sm.skill, args: sm.args, instruction: sm.instruction, model: sm.model, approval: sm.approval, reset: rr.reset });
     await loadRuns(); await selectRun(run.id);
-  } catch (e) { banner(e.message, true); }
+  } catch (e) { if (e.data?.sinSesion) avisoSinSesion(e.message); else banner(e.message, true); }
 });
+
+/**
+ * Sin sesión ninguna skill puede trabajar, así que el paso ni siquiera arranca: no se marca
+ * como fallido, porque el error no es suyo. Se avisa y se ofrece iniciar sesión ahí mismo.
+ */
+function avisoSinSesion(msg, destino) {
+  if (destino) $(destino).innerHTML = `<span class="nosesion">${esc(msg)}</span>`;
+  banner(`${esc(msg)} <button class="primary sm" id="bLogin">Iniciar sesión</button>`, true, true);
+  $('#bLogin')?.addEventListener('click', async () => { switchTab('cuenta'); await startLogin(); loadCuenta(); });
+}
 
 // Opciones numeradas al final de la respuesta: se muestran como botones.
 function parseOptions(text) {
@@ -1213,7 +1276,7 @@ function connect() {
   const es = new EventSource('/api/events');
   es.onmessage = (m) => {
     const d = JSON.parse(m.data);
-    if (d.type === 'run_event') onRunEvent(d);
+    if (d.type === 'run_event') { avisoDeEvento(d.runId, d.ev); onRunEvent(d); }
     else if (d.type === 'runs_changed') loadRuns();
     else if (d.type === 'state_changed') { reloadStateSoon(); if ($('#tab-docs').classList.contains('on')) loadTree(); }
     else if (d.type === 'files_changed') { loadTree().then(renderInputs); }
@@ -1226,10 +1289,60 @@ function connect() {
 document.addEventListener('visibilitychange', () => { if (!document.hidden) verVersion(); });
 setTimeout(verVersion, 1500);
 
+// ---------------------------------------------------------------- avisos
+/**
+ * La app avisa cuando necesita al usuario: una pregunta, un permiso o una etapa terminada.
+ * Suena siempre (corto y discreto) y, si el permiso está dado, manda notificación del sistema
+ * cuando la ventana no está a la vista. Se apaga desde Cuenta.
+ */
+const AVISOS = { sonido: localStorage.getItem('ds-sonido') !== '0', push: localStorage.getItem('ds-push') === '1' };
+let audioCtx = null;
+function pitido(agudo = false) {
+  if (!AVISOS.sonido) return;
+  try {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const t = audioCtx.currentTime, o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = 'sine'; o.frequency.setValueAtTime(agudo ? 880 : 620, t);
+    o.frequency.setValueAtTime(agudo ? 1175 : 780, t + 0.12);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.09, t + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.34);
+    o.connect(g).connect(audioCtx.destination); o.start(t); o.stop(t + 0.36);
+  } catch { /* sin audio disponible: queda la notificación y el título */ }
+}
+let tituloBase = document.title, parpadeo = null;
+function marcarTitulo(txt) {
+  clearInterval(parpadeo);
+  if (!txt) { document.title = tituloBase; return; }
+  let on = false;
+  document.title = `${txt} · ${tituloBase}`;
+  parpadeo = setInterval(() => { on = !on; document.title = on ? tituloBase : `${txt} · ${tituloBase}`; }, 1400);
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden) marcarTitulo(''); });
+window.addEventListener('focus', () => marcarTitulo(''));
+
+function avisar(titulo, cuerpo, agudo = false) {
+  pitido(agudo);
+  if (document.hidden) marcarTitulo(titulo);
+  if (!AVISOS.push || !('Notification' in window) || Notification.permission !== 'granted' || !document.hidden) return;
+  try { const n = new Notification(titulo, { body: cuerpo, tag: 'delivery-studio' }); n.onclick = () => { window.focus(); n.close(); }; } catch { /* el navegador la rechazó */ }
+}
+
+/** Qué eventos merecen sacar al usuario de lo que está haciendo. */
+function avisoDeEvento(runId, ev) {
+  const r = S.runs.find((x) => x.id === runId), quien = r?.title || 'Una skill';
+  if (ev.type === 'question') return avisar('Te están preguntando', `${quien} necesita tu respuesta para continuar.`, true);
+  if (ev.type === 'permission') return avisar('Piden tu permiso', `${quien} quiere usar ${ev.tool}.`, true);
+  if (ev.type === 'status' && ev.status === 'esperando') return avisar('Etapa terminada', `${quien} terminó y espera tu revisión.`);
+  if (ev.type === 'status' && ev.status === 'error') return avisar('Terminó con error', `${quien} no pudo terminar.`);
+}
+
 function onRunEvent({ runId, ev }) {
   if (runId !== S.cur) return;
   S.events.push(ev);
   if (ev.type === 'alcance' && S.curSummary) S.curSummary.alcance = ev.alcance;
+
   if (ev.type === 'status' && S.curSummary) { S.curSummary.status = ev.status; if (ev.status !== 'running') renderLog(); else updateHead(); renderRuns(); return; }
   if (ev.type === 'resolved') { renderLog(); return; }
   if (ev.type === 'result' && S.curSummary) { S.curSummary.cost = ev.cost || S.curSummary.cost; }
@@ -1237,8 +1350,8 @@ function onRunEvent({ runId, ev }) {
   if (ev.type === 'result' && S.curSummary) { S.curSummary.hasResult = true; S.curSummary.ok = ev.ok; }
   $('#opts')?.remove();
   const body = $('#logBody'); const stick = nearBottom(body);
-  const resolved = new Set(S.events.filter((e) => e.type === 'resolved').map((e) => e.id));
-  body.append(...nodesFor(ev, resolved));
+  const resolved = new Map(S.events.filter((e) => e.type === 'resolved').map((e) => [e.id, e]));
+  colocar(body, ev, nodesFor(ev, resolved));
   if (stick) body.scrollTop = body.scrollHeight;
   updateHead();
 }
@@ -1380,6 +1493,7 @@ function pintarCuenta(box) {
   const ICOC = {
     conexion: '<svg viewBox="0 0 24 24"><path d="M9 17a5 5 0 0 1 0-7l2-2a5 5 0 0 1 7 7l-1 1"/><path d="M15 7a5 5 0 0 1 0 7l-2 2a5 5 0 0 1-7-7l1-1"/></svg>',
     consumo: '<svg viewBox="0 0 24 24"><path d="M4 19V9M10 19V5M16 19v-6M22 19H2"/></svg>',
+    avisos: '<svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 8-3 8h18s-3-1-3-8"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>',
   };
   // Reparto del consumo por modelo, con la misma barra apilada del Resumen.
   const totCost = u.porModelo.reduce((x, m) => x + m.cost, 0);
@@ -1403,6 +1517,13 @@ function pintarCuenta(box) {
       <div class="acctlog" id="acctLog"></div>
     </section>
     <section class="acard">
+      <div class="ah"><h3><span class="ic morado">${ICOC.avisos}</span>Avisos</h3></div>
+      <p class="muted sm">Cuando una skill te pregunta algo, pide un permiso o termina una etapa, la app te avisa aunque estés en otra ventana.</p>
+      <label class="opt"><input type="checkbox" id="avSonido" ${AVISOS.sonido ? 'checked' : ''}> Sonido</label>
+      <label class="opt"><input type="checkbox" id="avPush" ${AVISOS.push ? 'checked' : ''}> Notificación del sistema${'Notification' in window ? '' : ' (este navegador no las admite)'}</label>
+      <p class="muted sm" id="avMsg"></p>
+    </section>
+    <section class="acard">
       <div class="ah"><h3><span class="ic verde">${ICOC.consumo}</span>Consumo</h3></div>
       <div class="big">
         <div><div class="l">Tokens totales</div><div class="v">${nf.format(totTok(u.total))}</div></div>
@@ -1412,10 +1533,18 @@ function pintarCuenta(box) {
       ${barraU}
       <p class="muted sm">Entrada ${nf.format(u.total.input)} · Salida ${nf.format(u.total.output)} · Caché leída ${nf.format(u.total.cacheRead)} · Caché escrita ${nf.format(u.total.cacheWrite)}</p>
       ${tabla('Por modelo', u.porModelo, 'Modelo')}
-      ${tabla('Por proyecto', u.porProyecto, 'Proyecto')}
-      <p class="muted sm">«Equivalente API» es lo que costaría a precio de API, igual que el valor que ves en cada ejecución (referencia, no se cobra): con suscripción no se cobra por token. Suma todos los proyectos que abres con este estudio.${u.sinTokens ? ` ${nf.format(u.sinTokens)} ejecuciones anteriores al registro de tokens solo tienen costo, sin tokens.` : ''}</p>
+      <p class="muted sm">«Equivalente API» es lo que costaría a precio de API, igual que el valor que ves en cada ejecución (referencia, no se cobra): con suscripción no se cobra por token. Es solo el consumo de ${esc(u.proyecto || 'este proyecto')}: el registro vive en su carpeta y no mezcla otros proyectos.${u.sinTokens ? ` ${nf.format(u.sinTokens)} ejecuciones anteriores al registro de tokens solo tienen costo, sin tokens.` : ''}</p>
     </section>
   </div>`;
+  $('#avSonido')?.addEventListener('change', (e) => { AVISOS.sonido = e.target.checked; localStorage.setItem('ds-sonido', e.target.checked ? '1' : '0'); if (e.target.checked) pitido(); });
+  $('#avPush')?.addEventListener('change', async (e) => {
+    const msg = $('#avMsg');
+    if (!e.target.checked) { AVISOS.push = false; localStorage.setItem('ds-push', '0'); msg.textContent = ''; return; }
+    if (!('Notification' in window)) { e.target.checked = false; msg.textContent = 'Este navegador no admite notificaciones del sistema.'; return; }
+    const r = Notification.permission === 'granted' ? 'granted' : await Notification.requestPermission();
+    if (r !== 'granted') { e.target.checked = false; AVISOS.push = false; localStorage.setItem('ds-push', '0'); msg.textContent = 'El navegador no dio permiso. Actívalo en los ajustes del sitio.'; return; }
+    AVISOS.push = true; localStorage.setItem('ds-push', '1'); msg.textContent = 'Listo: te avisará cuando la ventana no esté a la vista.';
+  });
   $('#acctReconnect')?.addEventListener('click', async () => { await startLogin(); loadCuenta(); });
   $('#acctRefresh').addEventListener('click', async () => { await loadAuth(); loadCuenta(); });
   renderAcctLog();

@@ -18,7 +18,7 @@
     "init-project"
    ],
    "insumo": "Material del cliente en inputs/",
-   "produce": "Evidencia citable en evidence/ (EV-NNN)",
+   "produce": "Evidencia citable en evidence/, una por fuente",
    "arg": "[ampliar]",
    "tier": "medio"
   },
@@ -53,7 +53,7 @@
    "requiere": [
     "generate-context-pack"
    ],
-   "insumo": "Preguntas OQ-NNN",
+   "insumo": "Las preguntas abiertas del proyecto",
    "produce": "Respuestas incorporadas o cuestionario para el cliente",
    "tier": "medio"
   },
@@ -158,7 +158,7 @@
    "paso": "18-defect-report",
    "requiere": [],
    "insumo": "Fallas de validación o ejecución",
-   "produce": "Defectos DEF-NNN y CSV",
+   "produce": "Defectos con severidad y trazabilidad, y CSV",
    "arg": "[lote]",
    "tier": "medio"
   },
@@ -420,7 +420,7 @@
     "init-project"
    ],
    "insumo": "Audio, transcripción o notas de la reunión",
-   "produce": "Acta: decisiones, compromisos (CMP) y preguntas",
+   "produce": "Acta: decisiones, compromisos y preguntas",
    "arg": "[archivo o EV-NNN] [tema]",
    "tier": "medio"
   },
@@ -444,7 +444,7 @@
     "generate-context-pack"
    ],
    "insumo": "La petición del cliente; ideal el análisis de impacto",
-   "produce": "Solicitud formal (SC-NNN) con impacto, opciones y registro",
+   "produce": "Solicitud formal con impacto, opciones y registro",
    "arg": "[nuevo <motivo> | aprobar SC-NNN | estado]",
    "tier": "medio"
   },
@@ -480,7 +480,7 @@
     "init-project"
    ],
    "insumo": "El reporte de la falla",
-   "produce": "Registro INC-NNN, causa raíz y plan de corrección",
+   "produce": "Registro del incidente, causa raíz y plan de corrección",
    "arg": "[nuevo <descripción> | seguir INC-NNN | estado]",
    "tier": "alto"
   }
