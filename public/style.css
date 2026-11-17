@@ -72,7 +72,7 @@ main{flex:1;min-height:0;overflow:hidden}
 .logHead{padding:14px 18px;border-bottom:1px solid var(--line-soft);font-weight:600;display:flex;gap:10px;align-items:center;flex-wrap:wrap;min-width:0}
 .logBody{flex:1;min-width:0;overflow-y:auto;overflow-x:hidden;padding:18px;overflow-wrap:anywhere}
 .logBody *{max-width:100%}
-.composer{border-top:1px solid var(--line-soft);padding:12px 18px;background:var(--s1);border-radius:0 0 var(--r-lg) var(--r-lg)}
+.composer{margin-top:10px;border-top:1px solid var(--line-soft);padding:17px 18px 14px;background:var(--s1);border-radius:0 0 var(--r-lg) var(--r-lg)}
 .composer textarea{max-width:100%}
 
 .tool{font:12px var(--mono);color:var(--dim);margin:3px 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}.tool b{color:var(--mut);font-weight:600}
@@ -420,8 +420,8 @@ details.tool.paso[open]>summary::before{transform:rotate(90deg)}
 details.tool.paso>summary:hover{color:var(--ink)}
 details.tool.paso .cmd{font:12px var(--mono);color:var(--dim);white-space:pre-wrap;overflow-wrap:anywhere;margin:4px 0 6px 16px;padding:7px 10px;background:var(--s2);border:1px solid var(--line-soft);border-radius:var(--r-sm)}
 /* barra de actividad: lo único que distingue «pensando» de «colgado» en un bloque largo */
-.latido{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:8px 18px 7px;border-top:1px solid var(--line-soft);font-size:12.5px}
-.latido+.composer{border-top:none;padding-top:4px}
+.latido{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px;padding:9px 18px;border-top:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft);font-size:12.5px}
+.latido:not([hidden])+.composer{margin-top:0;border-top:none;padding-top:17px}
 .latido b{font-weight:600}
 .latido .muted{color:var(--mut)}
 .latido .lp{width:8px;height:8px;border-radius:50%;background:var(--line-hi);flex:none}
