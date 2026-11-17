@@ -920,7 +920,10 @@ function pintarLatido() {
   clearInterval(latidoTimer); latidoTimer = null;
   if (!sm || sm.status !== 'running') { caja.hidden = true; caja.innerHTML = ''; return; }
   caja.hidden = false;
-  const ultimo = () => Math.max(PULSO.ts || 0, S.events.at(-1)?.ts || 0, sm.started || 0);
+  // Desde cuándo lleva trabajando ESTE turno. «started» es cuándo se creó la etapa, que puede
+  // haber pasado la noche esperando tu respuesta: contar desde ahí daría horas de «trabajando».
+  const desde = sm.turnoDesde || S.events.filter((e) => e.type === 'status' && e.status === 'running').at(-1)?.ts || sm.started || Date.now();
+  const ultimo = () => Math.max(PULSO.ts || 0, S.events.at(-1)?.ts || 0, desde);
   const pinta = () => {
     const quieto = Date.now() - ultimo();
     const escribiendo = PULSO.ts && Date.now() - PULSO.ts < 2500;
@@ -928,7 +931,7 @@ function pintarLatido() {
       ? `escribiendo ${nf.format(PULSO.chars)} caracteres${PULSO.modo === 'herramienta' ? ' en una herramienta' : ''}`
       : quieto > 150000 ? `sin novedades desde hace ${transcurrido(quieto)}. Sigue conectada: con un entregable grande es normal que pase minutos escribiendo un solo bloque.`
       : `último movimiento hace ${transcurrido(quieto)}`;
-    caja.innerHTML = `<span class="lp ${escribiendo ? 'on' : ''}" aria-hidden="true"></span><b>Trabajando ${transcurrido(Date.now() - (sm.started || Date.now()))}</b><span class="muted">${esc(detalle)}</span>`;
+    caja.innerHTML = `<span class="lp ${escribiendo ? 'on' : ''}" aria-hidden="true"></span><b>Trabajando ${transcurrido(Date.now() - desde)}</b><span class="muted">${esc(detalle)}</span>`;
   };
   pinta();
   latidoTimer = setInterval(pinta, 1000);
@@ -1390,6 +1393,7 @@ function onRunEvent({ runId, ev }) {
   S.events.push(ev);
   if (ev.type === 'alcance' && S.curSummary) S.curSummary.alcance = ev.alcance;
 
+  if (ev.type === 'status' && ev.status === 'running' && S.curSummary) { S.curSummary.turnoDesde = ev.ts; PULSO.ts = 0; PULSO.chars = 0; }
   if (ev.type === 'status' && S.curSummary) { S.curSummary.status = ev.status; if (ev.status !== 'running') renderLog(); else updateHead(); renderRuns(); return; }
   if (ev.type === 'resolved') { renderLog(); return; }
   if (ev.type === 'result' && S.curSummary) { S.curSummary.cost = ev.cost || S.curSummary.cost; }
