@@ -48,7 +48,7 @@ Si existe el plan de pruebas (`pipeline.py run latest 02a-test-plan proyecto`), 
 
 1. **Framework** (`automatizacion.framework`): Playwright (recomendado: es el mismo motor de la exploración, los selectores se usan tal cual y trae reportes, trazas y paralelismo), Cypress, WebdriverIO o Selenium. Si `tech-policy.md` impone otro, respétalo.
 2. **Lenguaje** (`automatizacion.lenguaje`): TypeScript (recomendado con Playwright), JavaScript, Python, Java o C#. Considera el lenguaje que domina el equipo de QA.
-3. **Repositorio** (`automatizacion.repositorio`): ruta de un repositorio nuevo, o una carpeta dentro del repositorio del código.
+3. **Repositorio** (`automatizacion.repositorio`): por defecto **`automatizacion/` dentro de la carpeta del proyecto**, que es lo más simple y deja el proyecto autocontenido; propónlo así. Si el usuario prefiere otra ruta (por ejemplo un repositorio que ya existe o una carpeta del repositorio del código), que la indique él: en la aplicación, en «Instrucciones adicionales» antes de ejecutar, o deteniéndote y escribiéndola. Solo entonces trabaja fuera de la carpeta del proyecto; no propongas tú una ruta externa.
 4. **Patrón** (`automatizacion.patron`): Page Object Model (recomendado) o Screenplay.
 5. **Navegadores y dispositivos**: desde `constraints.md`; si no dice, Chromium en escritorio y agrega otros cuando se pidan.
 

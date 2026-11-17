@@ -373,7 +373,7 @@ function openModal(html) {
   if (!S.focoPrevio) S.focoPrevio = document.activeElement;
   $('#mbox').innerHTML = html;
   $('#modal').hidden = false;
-  ($('#mbox').querySelector(FOCO) || $('#mbox')).focus?.();
+  ($('#mbox').querySelector(FOCO) || $('#mbox')).focus?.({ preventScroll: true });
 }
 function closeModal() {
   B = null; $('#modal').hidden = true; $('#mbox').innerHTML = '';
@@ -681,6 +681,10 @@ function openBuilder(editId = null) {
   renderBuilder();
 }
 function renderBuilder() {
+  // Agregar o quitar un paso repinta la ventana entera. Sin esto, las dos columnas vuelven
+  // arriba y hay que buscar otra vez dónde ibas, que con 44 skills es un viaje largo.
+  const scroll = $$('#mbox .bcol').map((c) => c.scrollTop);
+  const mbox = $('#mbox').scrollTop;
   const st = S.state;
   const groups = [...new Set(st.skills.map((s) => s.grupo))];
   const sel = new Set(B.skills);
@@ -697,6 +701,8 @@ function renderBuilder() {
       <div class="bcol"><h4>Mi ruta (${B.skills.length})</h4>${B.skills.length ? B.skills.map((id, i) => `<div class="bs" data-i="${i}"><span>${i + 1}. ${esc(skillOf(id)?.nombre || id)}${hint(id)}</span><span class="bctl"><button class="icon-btn" data-up title="Subir" aria-label="Subir">↑</button><button class="icon-btn" data-down title="Bajar" aria-label="Bajar">↓</button><button class="icon-btn" data-rm title="Quitar" aria-label="Quitar">✕</button></span></div>`).join('') : '<p class="muted">Agrega skills con el botón +.</p>'}</div>
     </div>
     <div class="row"><button class="primary" id="bSave" ${bMotivos(problemas).length ? 'disabled' : ''}>Guardar y abrir</button>${problemas.length ? '<button class="warn primary" id="bFix">Agregar lo que falta</button>' : ''}<span class="muted" id="bMsg">${esc(bMotivos(problemas).join(' '))}</span></div>`);
+  $$('#mbox .bcol').forEach((c, i) => { if (scroll[i] != null) c.scrollTop = scroll[i]; });
+  $('#mbox').scrollTop = mbox;
 }
 /** Por qué todavía no se puede guardar la ruta (lista vacía = se puede). */
 function bMotivos(problemas) {

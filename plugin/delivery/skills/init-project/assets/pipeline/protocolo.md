@@ -182,7 +182,7 @@ Las versiones y los alcances son cosas distintas: `vN+1` corrige o completa el *
 
 ## Repositorios de código
 
-Los pasos de desarrollo, CI/CD y automatización trabajan en repositorios fuera de esta carpeta (o en subcarpetas que el usuario indique). La ruta de cada uno es una decisión (`repositorio.codigo`, `automatizacion.repositorio`).
+Los pasos de desarrollo, CI/CD y automatización trabajan en repositorios cuya ruta es una decisión del proyecto (`repositorio.codigo`, `automatizacion.repositorio`). **Por defecto van dentro de la carpeta del proyecto** (`codigo/`, `automatizacion/`): así queda autocontenido y las aplicaciones que piden permiso por cada escritura no interrumpen a cada archivo. Una ruta externa solo se usa si la indica el usuario, en «Instrucciones adicionales» o deteniendo la ejecución; no la propongas tú.
 
 - Antes de escribir, comprueba el estado del repositorio (`git status`, rama actual). Si hay cambios sin confirmar que no son tuyos, detente y pregunta.
 - Trabaja en una rama propia del paso (por ejemplo `feature/US-012-...` o `automation/sprint-01`), nunca directo en la rama principal.

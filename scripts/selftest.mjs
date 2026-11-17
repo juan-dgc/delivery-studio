@@ -93,6 +93,22 @@ await t('Lo que no se deshace sí se marca como peligroso', async () => {
   assert.equal(ev.risky, true);
   assert.equal(ev.opaco, false);
 });
+await t('Una ruta que el usuario escribe abre esa carpeta, y solo esa', async () => {
+  const run = mk('preguntar');
+  run.permitidas = []; rm.runs.set(run.id, run);
+  // fuera del proyecto y sin autorización: pregunta
+  assert.equal(await decide(run, 'Write', { file_path: '/tmp/repo-cliente/src/a.ts' }), 'PENDIENTE');
+  rm.abrirRutas(run, 'El repositorio ya existe, está en /tmp/repo-cliente, úsalo.');
+  assert.equal((await decide(run, 'Write', { file_path: '/tmp/repo-cliente/src/a.ts' })).behavior, 'allow');
+  assert.equal((await decide(run, 'Write', { file_path: '/tmp/repo-cliente/tests/b.spec.ts' })).behavior, 'allow');
+  // otra carpeta cualquiera sigue preguntando
+  assert.equal(await decide(run, 'Write', { file_path: '/tmp/otro-sitio/x.ts' }), 'PENDIENTE');
+});
+await t('No se abren la carpeta personal ni las de credenciales', async () => {
+  const run = mk('preguntar'); run.permitidas = []; rm.runs.set(run.id, run);
+  rm.abrirRutas(run, `usa / y ~ y ${os.homedir()} y ~/.ssh/claves y /etc`);
+  assert.deepEqual(run.permitidas.filter((x) => x === os.homedir() || /\.ssh/.test(x)), []);
+});
 await t('La terminal de solo lectura no pide permiso', async () => {
   const run = mk('preguntar'); rm.runs.set(run.id, run);
   const leer = ['file inputs/a.pdf', 'pdftotext inputs/a.pdf -', 'wc -l evidence/EV-001.md', 'mkdir -p evidence/_texto',

@@ -52,7 +52,7 @@ Las historias del sprint salen del alcance según la regla de "Alcances" del pro
 
 Usa las decisiones existentes (`tecnologia.backend`, `tecnologia.frontend`, `tecnologia.base_datos` y `tecnologia.hosting` vienen de la arquitectura y del esquema; no las vuelvas a preguntar). Pregunta solo lo que falte, en una ronda, con el selector de preguntas de la aplicación:
 
-1. **Repositorio** (`repositorio.codigo`): ruta local. Si no existe, pregunta si se crea uno nuevo en la ruta que el usuario indique o si hay que clonarlo. En la aplicación de escritorio debe estar en una carpeta conectada a la sesión.
+1. **Repositorio** (`repositorio.codigo`): si no hay ninguno, propón crearlo en **`codigo/` dentro de la carpeta del proyecto**: así queda autocontenido y la aplicación puede escribir sin pedir permiso por cada archivo. Si el usuario prefiere otra ruta, o ya tiene un repositorio en otro sitio, que la indique él: en «Instrucciones adicionales» antes de ejecutar, o deteniéndote y escribiéndola. Solo entonces trabaja fuera de la carpeta del proyecto; no propongas tú una ruta externa, y si la ruta que te dan está fuera y cada escritura pide permiso, dilo antes de empezar para que decida.
 2. **Modelo de ramas** (`repositorio.modelo_ramas`): GitHub Flow (rama principal y ramas cortas, recomendado para equipos pequeños), Git Flow o basado en tronco. Define de qué rama salen las tuyas. Si el repositorio ya tiene un modelo, se respeta.
 3. **Una rama por** (`repositorio.rama_por`): historia (recomendado) o sprint.
 4. **Gestor de paquetes** (`desarrollo.gestor_paquetes`): el que ya use el repositorio (míralo en sus archivos de bloqueo); si es nuevo, el que diga `tech-policy.md` o el estándar del ecosistema.
