@@ -903,6 +903,37 @@ function renderLog() {
   body.scrollTop = body.scrollHeight;
 }
 
+/**
+ * Un entregable grande puede tener al modelo escribiendo diez o quince minutos sin que llegue
+ * nada al registro, y desde fuera eso no se distingue de una ejecución colgada. Esta barra
+ * responde a la única pregunta que importa entonces: ¿sigue haciendo algo?
+ */
+const PULSO = { chars: 0, modo: '', ts: 0 };
+let latidoTimer = null;
+const transcurrido = (ms) => {
+  const s = Math.max(0, Math.round(ms / 1000));
+  return s < 60 ? `${s} s` : `${Math.floor(s / 60)} min ${String(s % 60).padStart(2, '0')} s`;
+};
+function pintarLatido() {
+  const sm = S.curSummary, caja = $('#latido');
+  if (!caja) return;
+  clearInterval(latidoTimer); latidoTimer = null;
+  if (!sm || sm.status !== 'running') { caja.hidden = true; caja.innerHTML = ''; return; }
+  caja.hidden = false;
+  const ultimo = () => Math.max(PULSO.ts || 0, S.events.at(-1)?.ts || 0, sm.started || 0);
+  const pinta = () => {
+    const quieto = Date.now() - ultimo();
+    const escribiendo = PULSO.ts && Date.now() - PULSO.ts < 2500;
+    const detalle = escribiendo
+      ? `escribiendo ${nf.format(PULSO.chars)} caracteres${PULSO.modo === 'herramienta' ? ' en una herramienta' : ''}`
+      : quieto > 150000 ? `sin novedades desde hace ${transcurrido(quieto)}. Sigue conectada: con un entregable grande es normal que pase minutos escribiendo un solo bloque.`
+      : `último movimiento hace ${transcurrido(quieto)}`;
+    caja.innerHTML = `<span class="lp ${escribiendo ? 'on' : ''}" aria-hidden="true"></span><b>Trabajando ${transcurrido(Date.now() - (sm.started || Date.now()))}</b><span class="muted">${esc(detalle)}</span>`;
+  };
+  pinta();
+  latidoTimer = setInterval(pinta, 1000);
+}
+
 function updateHead() {
   const sm = S.curSummary; if (!sm) return;
   const m = Object.fromEntries((S.state?.models || []).map((x) => [x.id, x.label]));
@@ -911,6 +942,7 @@ function updateHead() {
   const packChip = esPack ? `<span class="chip pk">${packPend ? `Tanda ${pk.tandaActual} de ${pk.tandas} · ${pk.hechos}/${pk.total} documentos` : `Plan completo · ${pk.total} documentos`}</span>` : '';
   const loteChip = sm.alcance ? `<span class="chip lt">${esc(sm.alcance)}</span>` : '';
   $('#logHead').innerHTML = `<span>${esc(sm.title)}</span><span class="chip">${esc(RUN_ESTADO[sm.status] || sm.status)}</span>${loteChip}${packChip}<span class="muted normal">${esc(m[sm.model] || sm.model)}${esc(cost)}</span>`;
+  pintarLatido();
   $('#composer').hidden = false;
   const fin = sm.status === 'aprobada' || sm.status === 'cerrada';
   $('#composer').hidden = sm.status === 'aprobada';
@@ -1276,6 +1308,7 @@ function connect() {
   const es = new EventSource('/api/events');
   es.onmessage = (m) => {
     const d = JSON.parse(m.data);
+    if (d.type === 'pulso') { if (d.runId === S.cur) { PULSO.chars = d.chars; PULSO.modo = d.modo; PULSO.ts = Date.now(); } return; }
     if (d.type === 'run_event') { avisoDeEvento(d.runId, d.ev); onRunEvent(d); }
     else if (d.type === 'runs_changed') loadRuns();
     else if (d.type === 'state_changed') { reloadStateSoon(); if ($('#tab-docs').classList.contains('on')) loadTree(); }
