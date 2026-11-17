@@ -420,7 +420,8 @@ details.tool.paso[open]>summary::before{transform:rotate(90deg)}
 details.tool.paso>summary:hover{color:var(--ink)}
 details.tool.paso .cmd{font:12px var(--mono);color:var(--dim);white-space:pre-wrap;overflow-wrap:anywhere;margin:4px 0 6px 16px;padding:7px 10px;background:var(--s2);border:1px solid var(--line-soft);border-radius:var(--r-sm)}
 /* barra de actividad: lo único que distingue «pensando» de «colgado» en un bloque largo */
-.latido{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:7px 16px;border-bottom:1px solid var(--line);font-size:12.5px}
+.latido{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:8px 18px 7px;border-top:1px solid var(--line-soft);font-size:12.5px}
+.latido+.composer{border-top:none;padding-top:4px}
 .latido b{font-weight:600}
 .latido .muted{color:var(--mut)}
 .latido .lp{width:8px;height:8px;border-radius:50%;background:var(--line-hi);flex:none}
