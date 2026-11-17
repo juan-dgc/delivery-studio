@@ -73,6 +73,23 @@ await t('La terminal de solo lectura no pide permiso', async () => {
     assert.equal(await decide(run, 'Bash', { command: c }), 'PENDIENTE', c);
   }
 });
+await t('Una pregunta huérfana se puede responder y reanuda la conversación', () => {
+  const run = mk('preguntar'); run.sessionId = 's1'; run.status = 'esperando';
+  run.events.push({ type: 'question', id: 'q-viejo', questions: [{ question: '¿Qué backend?' }] });
+  rm.runs.set(run.id, run);
+  let texto = null;
+  const turnReal = rm.turn; rm.turn = (r, t) => { texto = t; };
+  rm.answer(run.id, 'q-viejo', { answers: { '¿Qué backend?': 'Node con Fastify' } });
+  rm.turn = turnReal;
+  assert.ok(run.events.some((e) => e.type === 'resolved' && e.id === 'q-viejo'), 'queda marcada como respondida');
+  assert.match(texto, /Node con Fastify/);
+});
+await t('Sin conversación que reanudar, la pregunta huérfana no se responde', () => {
+  const run = mk('preguntar'); run.status = 'esperando';
+  run.events.push({ type: 'question', id: 'q-sin', questions: [] });
+  rm.runs.set(run.id, run);
+  assert.throws(() => rm.answer(run.id, 'q-sin', { answers: {} }), /no tiene conversación/);
+});
 await t('Abortar cancela las preguntas pendientes', async () => {
   const run = mk('preguntar'); rm.runs.set(run.id, run);
   const ac = new AbortController();

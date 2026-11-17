@@ -1020,7 +1020,10 @@ function nodesFor(ev, resolved) {
 }
 
 function questionCard(ev, done) {
-  const live = !done && S.curSummary?.status === 'running';
+  // Una pregunta que quedó colgada de un reinicio se puede responder igual: al enviarla se
+  // reanuda la conversación con esas respuestas, en vez de obligar a reescribirlas a mano.
+  const reanuda = !done && S.curSummary?.huerfana === ev.id;
+  const live = !done && (S.curSummary?.status === 'running' || reanuda);
   // Ya respondida: la tarjeta pasa a verde y conserva marcado lo que eligió el usuario.
   const dadas = done?.answers || null, omitida = !!done && !done.answers;
   const c = el(`<div class="card2 ${dadas ? 'ok' : omitida ? '' : 'q'}" data-qid="${esc(ev.id)}"></div>`);
@@ -1033,7 +1036,7 @@ function questionCard(ev, done) {
       <label class="opt ${libres.length ? 'elegida' : ''}">Otra respuesta: <input type="text" data-other="${qi}" value="${esc(libres.join(', '))}" ${live ? '' : 'disabled'}></label></div>`));
   });
   if (live) {
-    const row = el('<div class="row"><button class="primary">Enviar respuestas</button><button class="ghost" data-skip>Omitir</button><span class="muted" data-msg></span></div>');
+    const row = el(`<div class="row"><button class="primary">Enviar respuestas</button><button class="ghost" data-skip>Omitir</button><span class="muted" data-msg>${reanuda ? 'Esta pregunta quedó sin responder cuando se cerró el panel. Al enviarla se reanuda la conversación.' : ''}</span></div>`);
     c.append(row);
     row.querySelector('.primary').addEventListener('click', async () => {
       const answers = {};
