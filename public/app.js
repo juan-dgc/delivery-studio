@@ -1297,11 +1297,17 @@ setTimeout(verVersion, 1500);
  */
 const AVISOS = { sonido: localStorage.getItem('ds-sonido') !== '0', push: localStorage.getItem('ds-push') === '1' };
 let audioCtx = null;
-function pitido(agudo = false) {
+/**
+ * El navegador suspende el audio cuando la pestaña lleva rato oculta, y mientras está suspendido
+ * su reloj no avanza: programar el tono con el reloj congelado lo deja sin sonar. Por eso se espera
+ * a que vuelva antes de programarlo. Es la razón de que el primer aviso sonara y el segundo no.
+ */
+async function pitido(agudo = false) {
   if (!AVISOS.sonido) return;
   try {
     audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-    if (audioCtx.state === 'suspended') audioCtx.resume();
+    if (audioCtx.state !== 'running') await audioCtx.resume();
+    if (audioCtx.state !== 'running') return;
     const t = audioCtx.currentTime, o = audioCtx.createOscillator(), g = audioCtx.createGain();
     o.type = 'sine'; o.frequency.setValueAtTime(agudo ? 880 : 620, t);
     o.frequency.setValueAtTime(agudo ? 1175 : 780, t + 0.12);
@@ -1309,8 +1315,10 @@ function pitido(agudo = false) {
     g.gain.exponentialRampToValueAtTime(0.09, t + 0.02);
     g.gain.exponentialRampToValueAtTime(0.0001, t + 0.34);
     o.connect(g).connect(audioCtx.destination); o.start(t); o.stop(t + 0.36);
-  } catch { /* sin audio disponible: queda la notificación y el título */ }
+  } catch { /* sin audio disponible: quedan la notificación y el título */ }
 }
+// Un clic cualquiera revive el audio: así el aviso suena aunque el navegador lo hubiera dormido.
+document.addEventListener('click', () => { if (audioCtx?.state === 'suspended') audioCtx.resume().catch(() => {}); }, true);
 let tituloBase = document.title, parpadeo = null;
 function marcarTitulo(txt) {
   clearInterval(parpadeo);
@@ -1322,11 +1330,17 @@ function marcarTitulo(txt) {
 document.addEventListener('visibilitychange', () => { if (!document.hidden) marcarTitulo(''); });
 window.addEventListener('focus', () => marcarTitulo(''));
 
+let avisoN = 0;
 function avisar(titulo, cuerpo, agudo = false) {
   pitido(agudo);
   if (document.hidden) marcarTitulo(titulo);
   if (!AVISOS.push || !('Notification' in window) || Notification.permission !== 'granted' || !document.hidden) return;
-  try { const n = new Notification(titulo, { body: cuerpo, tag: 'delivery-studio' }); n.onclick = () => { window.focus(); n.close(); }; } catch { /* el navegador la rechazó */ }
+  try {
+    // Cada aviso lleva su propia etiqueta y pide volver a sonar: con una etiqueta fija, el
+    // navegador reemplaza la anterior en silencio y el segundo aviso pasa desapercibido.
+    const n = new Notification(titulo, { body: cuerpo, tag: `ds-${++avisoN}`, renotify: true, requireInteraction: true });
+    n.onclick = () => { window.focus(); n.close(); };
+  } catch { /* el navegador la rechazó */ }
 }
 
 /** Qué eventos merecen sacar al usuario de lo que está haciendo. */
