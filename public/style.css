@@ -338,6 +338,16 @@ select[data-dd]{display:none!important}
 .acct{--g:16px;gap:var(--g);align-items:stretch;padding:0 0 40px}
 .acct .acard{display:flex;flex-direction:column;height:100%}
 .acct .acard .acctlog{margin-top:auto}
+/* Columna izquierda: conexión y avisos, uno debajo del otro. Derecha: el consumo, que es
+   lo que necesita ancho (tres cifras, barra y tabla). Sin esto, el consumo caía en la
+   columna estrecha y las cifras se partían en dos líneas. */
+.acct .conexion{grid-column:1;grid-row:1}
+.acct .avisos{grid-column:1;grid-row:2;height:auto}
+.acct .consumo{grid-column:2;grid-row:1 / span 2}
+@media (max-width:1100px){.acct .conexion,.acct .avisos,.acct .consumo{grid-column:1;grid-row:auto}}
+/* casillas de ajuste: no son opciones de una pregunta, no se iluminan al pasar */
+.check{display:flex;gap:9px;align-items:center;padding:6px 2px;cursor:pointer;font-size:14px}
+.check input{accent-color:var(--pri-t);width:15px;height:15px;margin:0;cursor:pointer}
 /* reparto del consumo por modelo */
 .stack.mod{height:12px;margin:18px 0 10px}
 .stack.mod i.m0,.leg i.m0{background:var(--pri)}

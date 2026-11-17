@@ -1500,7 +1500,7 @@ function pintarCuenta(box) {
   const barraU = totCost > 0 ? `<div class="stack mod">${u.porModelo.map((m, i) => `<i class="m${i % 4}" style="width:${(m.cost / totCost) * 100}%" title="${esc(m.nombre)}: ≈ ${usd(m.cost)}"></i>`).join('')}</div>
     <div class="leg">${u.porModelo.map((m, i) => `<span><i class="m${i % 4}"></i>${esc(m.nombre)} ${Math.round((m.cost / totCost) * 100)}%</span>`).join('')}</div>` : '';
   box.innerHTML = `<div class="acct">
-    <section class="acard">
+    <section class="acard conexion">
       <div class="ah"><h3><span class="ic azul">${ICOC.conexion}</span>Conexión</h3><span class="chip ${a.loggedIn ? 'ok' : 'bad'}">${a.loggedIn ? 'Conectada' : 'Sin sesión'}</span></div>
       <dl class="kv2">
         ${fila('IA', `${a.ia} · ${a.via}`)}
@@ -1516,24 +1516,24 @@ function pintarCuenta(box) {
       ${a.mode !== 'subscription' ? '<p class="muted sm">En modo API key no hay sesión que reconectar: revisa la variable ANTHROPIC_API_KEY y reinicia el servidor.</p>' : '<p class="muted sm">Abre el enlace que aparezca abajo para iniciar sesión de nuevo con tu cuenta de Claude.</p>'}
       <div class="acctlog" id="acctLog"></div>
     </section>
-    <section class="acard">
+    <section class="acard avisos">
       <div class="ah"><h3><span class="ic morado">${ICOC.avisos}</span>Avisos</h3></div>
       <p class="muted sm">Cuando una skill te pregunta algo, pide un permiso o termina una etapa, la app te avisa aunque estés en otra ventana.</p>
-      <label class="opt"><input type="checkbox" id="avSonido" ${AVISOS.sonido ? 'checked' : ''}> Sonido</label>
-      <label class="opt"><input type="checkbox" id="avPush" ${AVISOS.push ? 'checked' : ''}> Notificación del sistema${'Notification' in window ? '' : ' (este navegador no las admite)'}</label>
+      <label class="check"><input type="checkbox" id="avSonido" ${AVISOS.sonido ? 'checked' : ''}><span>Sonido</span></label>
+      <label class="check"><input type="checkbox" id="avPush" ${AVISOS.push ? 'checked' : ''}><span>Notificación del sistema${'Notification' in window ? '' : ' (este navegador no las admite)'}</span></label>
       <p class="muted sm" id="avMsg"></p>
     </section>
-    <section class="acard">
+    <section class="acard consumo">
       <div class="ah"><h3><span class="ic verde">${ICOC.consumo}</span>Consumo</h3></div>
       <div class="big">
         <div><div class="l">Tokens totales</div><div class="v">${nf.format(totTok(u.total))}</div></div>
         <div><div class="l">Equivalente API</div><div class="v">≈ ${usd(u.total.cost)}</div><div class="s">referencia, no se cobra</div></div>
-        <div><div class="l">Este mes</div><div class="v sm">≈ ${usd(u.mes.cost)}</div><div class="s">${nf.format(totTok(u.mes))} tokens · ${nf.format(u.mes.runs)} ejecuciones</div></div>
+        <div><div class="l">Este mes</div><div class="v sm">≈ ${usd(u.mes.cost)}</div><div class="s">${nf.format(totTok(u.mes))} tokens · ${nf.format(u.mes.runs)} ${u.mes.runs === 1 ? 'ejecución' : 'ejecuciones'}</div></div>
       </div>
       ${barraU}
       <p class="muted sm">Entrada ${nf.format(u.total.input)} · Salida ${nf.format(u.total.output)} · Caché leída ${nf.format(u.total.cacheRead)} · Caché escrita ${nf.format(u.total.cacheWrite)}</p>
       ${tabla('Por modelo', u.porModelo, 'Modelo')}
-      <p class="muted sm">«Equivalente API» es lo que costaría a precio de API, igual que el valor que ves en cada ejecución (referencia, no se cobra): con suscripción no se cobra por token. Es solo el consumo de ${esc(u.proyecto || 'este proyecto')}: el registro vive en su carpeta y no mezcla otros proyectos.${u.sinTokens ? ` ${nf.format(u.sinTokens)} ejecuciones anteriores al registro de tokens solo tienen costo, sin tokens.` : ''}</p>
+      <p class="muted sm">«Equivalente API» es lo que costaría a precio de API, igual que el valor que ves en cada ejecución (referencia, no se cobra): con suscripción no se cobra por token. Es solo el consumo de ${esc(u.proyecto || 'este proyecto')}: el registro vive en su carpeta y no mezcla otros proyectos.${u.sinTokens ? ` ${nf.format(u.sinTokens)} ${u.sinTokens === 1 ? 'ejecución anterior al registro de tokens solo tiene' : 'ejecuciones anteriores al registro de tokens solo tienen'} costo, sin tokens.` : ''}</p>
     </section>
   </div>`;
   $('#avSonido')?.addEventListener('change', (e) => { AVISOS.sonido = e.target.checked; localStorage.setItem('ds-sonido', e.target.checked ? '1' : '0'); if (e.target.checked) pitido(); });
