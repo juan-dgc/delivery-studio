@@ -9,7 +9,7 @@ argument-hint: "[auditar | corregir] [rutas o lote para limitar el alcance] [his
 
 > **Requiere antes:** un repositorio con código: el que produjo `/delivery:implement-code` o uno existente. No depende de ningún otro paso. **Aprovecha si existen:** el registro de implementación (10), `/delivery:review-security` (requisitos de seguridad del diseño), `/delivery:design-api-contracts` y `/delivery:design-db-schema`.
 >
-> **Dónde trabajar:** antes de empezar, entra a la carpeta del proyecto, la que contiene `.pipeline/` (en la aplicación de escritorio suele estar en `~/mnt/<carpeta conectada>`, no en la carpeta donde arranca la sesión). Todo documento se guarda directamente ahí, nunca solo en el chat, y al cerrar se enlaza cada archivo producido (secciones 0 y 6 de `.pipeline/protocolo.md`).
+> **Dónde trabajar:** el proyecto es la carpeta que contiene `.pipeline/`, y en casi todos los entornos la sesión ya arranca dentro de ella. Compruébalo con `python3 .pipeline/scripts/pipeline.py raiz`; solo si eso falla, búscala como indica la sección 0 de `.pipeline/protocolo.md`. Una vez comprobada, usa rutas relativas: no repitas la ruta completa ni un `cd` en cada comando. Todo documento se guarda directamente en el proyecto, nunca solo en el chat, y al cerrar se enlaza cada archivo producido (secciones 0 y 6 del protocolo).
 
 ## Rol
 

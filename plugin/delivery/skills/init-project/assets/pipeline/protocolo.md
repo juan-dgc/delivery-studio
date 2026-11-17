@@ -8,12 +8,17 @@ La razón de fondo es una sola: el usuario quiere controlar cada paso. Una skill
 
 La **raíz del proyecto** es la carpeta que contiene `.pipeline/`. Todo se lee y se escribe ahí.
 
-Antes de cualquier otra cosa, ubícala y entra en ella. En la terminal normalmente ya estás dentro. En la aplicación de escritorio la sesión puede arrancar en otra carpeta (una de trabajo temporal, a veces llamada también `outputs`): no es el proyecto.
+Antes de cualquier otra cosa, comprueba si ya estás en ella. Casi siempre sí: en una terminal y en las aplicaciones que abren el proyecto (como un panel de ejecución de skills), la sesión arranca dentro.
 
 ```bash
-ls .pipeline/pipeline.json 2>/dev/null || ls ~/mnt/*/.pipeline/pipeline.json ~/mnt/*/*/.pipeline/pipeline.json 2>/dev/null
-cd <carpeta que contiene .pipeline>
 python3 .pipeline/scripts/pipeline.py raiz
+```
+
+Si responde con una ruta, esa es la raíz y ya estás dentro: trabaja con rutas relativas y no repitas un `cd` en cada comando. Solo si falla, búscala. En algunos entornos de escritorio la sesión arranca en una carpeta de trabajo propia y las carpetas que el usuario conecta se montan aparte, en `~/mnt/<carpeta conectada>`:
+
+```bash
+ls ~/mnt/*/.pipeline/pipeline.json ~/mnt/*/*/.pipeline/pipeline.json 2>/dev/null
+cd <carpeta que contiene .pipeline>
 ```
 
 Si no aparece ninguna, el proyecto no está inicializado o su carpeta no está conectada a la sesión: dilo y pide al usuario que la conecte o que ejecute `/delivery:init-project`. Si aparecen varias, pregunta cuál.

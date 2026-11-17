@@ -26,7 +26,7 @@ Los archivos fuente están en la carpeta de esta skill, en `assets/`.
 
 ## 1. Revisar dónde estamos
 
-El proyecto debe quedar en una carpeta del computador del usuario, no en una carpeta temporal de la sesión. En la aplicación de escritorio, comprueba que estás dentro de una carpeta conectada (`~/mnt/<carpeta>`); si la sesión arrancó en otra parte, entra a la carpeta conectada donde el usuario quiere el proyecto, y si no hay ninguna conectada, pídele que conecte una antes de crear nada.
+El proyecto debe quedar en una carpeta del computador del usuario, no en una carpeta temporal de la sesión. Si la aplicación ya abrió un proyecto, estás dentro de esa carpeta y ahí se crea. En los entornos donde la sesión arranca en una carpeta propia y las del usuario se montan aparte (`~/mnt/<carpeta>`), comprueba que estás en una de ellas; si no, entra a la carpeta conectada donde el usuario quiere el proyecto, y si no hay ninguna conectada, pídele que conecte una antes de crear nada.
 
 Lista el contenido de la carpeta actual.
 
