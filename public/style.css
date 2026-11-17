@@ -411,6 +411,14 @@ abbr.sig{text-decoration:underline dotted color-mix(in srgb,var(--pri-t) 70%,tra
 .subhead .si svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;display:block}
 .subhead .muted{margin-left:auto;font-size:11px}
 .subbox .msg{opacity:1}
+/* paso del registro: se lee qué está pasando; el comando exacto se despliega con un clic */
+details.tool.paso{white-space:normal;overflow:visible;font:13px var(--sans, inherit);color:var(--mut)}
+details.tool.paso>summary{cursor:pointer;list-style:none;padding:2px 0;display:flex;gap:7px;align-items:baseline}
+details.tool.paso>summary::-webkit-details-marker{display:none}
+details.tool.paso>summary::before{content:"›";color:var(--dim);transition:transform .15s;display:inline-block}
+details.tool.paso[open]>summary::before{transform:rotate(90deg)}
+details.tool.paso>summary:hover{color:var(--ink)}
+details.tool.paso .cmd{font:12px var(--mono);color:var(--dim);white-space:pre-wrap;overflow-wrap:anywhere;margin:4px 0 6px 16px;padding:7px 10px;background:var(--s2);border:1px solid var(--line-soft);border-radius:var(--r-sm)}
 /* barra de actividad: lo único que distingue «pensando» de «colgado» en un bloque largo */
 .latido{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:7px 16px;border-bottom:1px solid var(--line);font-size:12.5px}
 .latido b{font-weight:600}

@@ -989,6 +989,114 @@ function colocar(body, ev, nodos) {
   }
 }
 
+/**
+ * El registro mostraba la línea de terminal tal cual, que para quien no la escribe es ruido.
+ * Aquí se traduce a lo que está pasando, y el comando exacto queda a un clic: hay que poder
+ * comprobarlo, pero no debería ser lo primero que se lee.
+ */
+const SCRIPTS = {
+  'check_evidence.py': 'Verificando la evidencia', 'check_pack.py': 'Verificando el paquete de contexto',
+  'check_trace.py': 'Comprobando la trazabilidad', 'check_selectors.py': 'Comprobando los selectores',
+  'coverage.py': 'Calculando la cobertura', 'score_pack.py': 'Puntuando el paquete de contexto',
+  'score_review.py': 'Puntuando la revisión', 'security_scan.py': 'Escaneando la seguridad del código',
+  'export_cases.py': 'Exportando los casos de prueba', 'merge_selectors.py': 'Combinando selectores',
+  'summarize_results.py': 'Resumiendo los resultados', 'transcribe.py': 'Transcribiendo audio',
+  'budget.py': 'Calculando el presupuesto',
+};
+const PIPELINE = {
+  status: 'Consultando el estado del proyecto', check: 'Comprobando si el paso puede ejecutarse',
+  run: 'Consultando las corridas del paso', decision: 'Revisando las decisiones del proyecto',
+  oq: 'Revisando las preguntas abiertas', alcance: 'Consultando los lotes', sources: 'Revisando las fuentes',
+  pack: 'Consultando el plan del paquete de contexto', nota: 'Anotando en la bitácora',
+  indice: 'Actualizando el índice de entregables', ids: 'Consultando los identificadores en uso',
+  sync: 'Sincronizando el estado', impacto: 'Calculando el impacto del cambio',
+  'diff-historias': 'Comparando historias', raiz: 'Ubicando la carpeta del proyecto',
+  skip: 'Omitiendo un paso', unskip: 'Reactivando un paso',
+};
+const archivos = (txt) => (/\$[A-Za-z_{(]/.test(txt) ? [] : txt.match(/[\w./-]+\.(?:md|json|csv|html|py|ts|js|yml|yaml|txt|feature)\b/g) || []).map((f) => f.split('/').pop());
+const listar = (xs) => (xs.length > 3 ? `${xs.slice(0, 3).join(', ')} y ${xs.length - 3} más` : xs.join(', '));
+
+function describirTramo(c) {
+  const cmd = c.trim().replace(/^(?:cd|pushd)\s+(?:"[^"]*"|'[^']*'|\S+)\s*$/i, '');
+  if (!cmd) return null;
+  const pl = /pipeline\.py\s+([\w-]+)(?:\s+([\w.-]+))?/.exec(cmd);
+  if (pl) {
+    const base = PIPELINE[pl[1]] || `Ejecutando ${pl[1]}`;
+    const escribe = /\b(set|add|new|finish|mark|done|write|nota)\b/.test(cmd);
+    if (pl[1] === 'check' && pl[2]) return `Comprobando si «${pl[2]}» puede ejecutarse`;
+    if (pl[1] === 'run' && pl[2]) return `${pl[2] === 'new' ? 'Abriendo' : pl[2] === 'finish' ? 'Cerrando' : 'Consultando'} la corrida del paso`;
+    if (pl[1] === 'decision' && escribe) return 'Registrando una decisión del proyecto';
+    if (pl[1] === 'nota') return 'Anotando en la bitácora';
+    return base;
+  }
+  const sc = /(?:scripts[\\/])([\w.-]+\.py)/.exec(cmd);
+  if (sc) return SCRIPTS[sc[1]] || `Ejecutando ${sc[1]}`;
+  const f = archivos(cmd);
+  if (/^(?:cat|more|nl|type|Get-Content)\b/i.test(cmd)) return f.length ? `Leyendo ${listar(f)}` : 'Leyendo un archivo';
+  if (/^(?:head|tail)\b/i.test(cmd)) return f.length ? `Leyendo parte de ${listar(f)}` : 'Leyendo parte de un archivo';
+  if (/^sed\s+-n/i.test(cmd)) return f.length ? `Leyendo parte de ${listar(f)}` : 'Leyendo parte de un archivo';
+  if (/^(?:grep|egrep|rg|findstr)\b/i.test(cmd)) {
+    const t = /["']([^"']{2,40})["']/.exec(cmd);
+    const limpio = t && !/[[\]{}()^$\\|*+?]/.test(t[1]) ? t[1].trim() : null;
+    return limpio ? `Buscando «${limpio}» en los documentos` : 'Buscando dentro de los documentos';
+  }
+  if (/^wc\b/i.test(cmd)) return 'Midiendo el tamaño de los documentos';
+  if (/^(?:ls|dir)\b/i.test(cmd)) return 'Mirando qué archivos hay';
+  if (/^find\b/i.test(cmd)) return 'Buscando archivos';
+  if (/^mkdir\b/i.test(cmd)) return 'Creando una carpeta';
+  if (/^git\s+(status|log|diff|show|rev-parse)\b/i.test(cmd)) return 'Consultando el repositorio';
+  if (/^(?:file|stat|du|pdfinfo|ffprobe)\b/i.test(cmd)) return 'Inspeccionando archivos';
+  if (/^pdftotext\b/i.test(cmd)) return 'Extrayendo el texto de un PDF';
+  if (/^for\b/i.test(cmd)) {
+    const lista = /^for\s+\w+\s+in\s+([^;]+?);?\s*do\b/i.exec(cmd);
+    const nombres = lista ? lista[1].trim().split(/\s+/).filter((x) => /^[\w.-]+$/.test(x)) : [];
+    if (nombres.length) return `${/\b(cat|head|tail|more)\b/.test(cmd) ? 'Leyendo' : 'Recorriendo'} ${listar(nombres.map((n) => (n.endsWith('.md') ? n : `${n}.md`)))}`;
+    return 'Recorriendo varios archivos';
+  }
+  return null;
+}
+
+function describirTool(ev) {
+  if (ev.tool === 'Read' || ev.tool === 'NotebookRead') {
+    const p = String(ev.summary || '');
+    if (/[\\/]\.claude[\\/]/.test(p) && /tool-results/.test(p)) return 'Releyendo un resultado anterior';
+    const raiz = S.state?.root;
+    const rel = raiz && p.startsWith(raiz) ? p.slice(raiz.length).replace(/^[\\/]/, '') : p.split('/').pop();
+    return `Leyendo ${rel}`;
+  }
+  if (ev.tool === 'Write') return `Escribiendo ${String(ev.summary || '').split('/').pop()}`;
+  if (ev.tool === 'Edit' || ev.tool === 'MultiEdit') return `Modificando ${String(ev.summary || '').split('/').pop()}`;
+  if (ev.tool === 'Glob') return 'Buscando archivos por nombre';
+  if (ev.tool === 'Grep') return 'Buscando dentro de los documentos';
+  if (ev.tool === 'WebSearch') return `Buscando en la web: ${ev.summary || ''}`.trim();
+  if (ev.tool === 'WebFetch') return 'Leyendo una página web';
+  if (ev.tool === 'Task' || ev.tool === 'Agent') return 'Repartiendo trabajo a un subagente';
+  const nb = /^mcp__[^_]*playwright[^_]*__browser_(.+)$/i.exec(ev.tool || '');
+  if (nb) {
+    const acc = { navigate: 'Abriendo una página', click: 'Pulsando en la página', type: 'Escribiendo en la página',
+      snapshot: 'Mirando la pantalla', take_screenshot: 'Tomando una captura', fill_form: 'Rellenando un formulario',
+      select_option: 'Eligiendo una opción', hover: 'Pasando por encima de un elemento', press_key: 'Pulsando una tecla',
+      wait_for: 'Esperando a que cargue', navigate_back: 'Volviendo atrás', tabs: 'Cambiando de pestaña',
+      console_messages: 'Leyendo la consola del navegador', network_requests: 'Revisando las peticiones de red' }[nb[1]];
+    return acc || 'Usando el navegador';
+  }
+  if (ev.tool === 'Bash' || ev.tool === 'PowerShell') {
+    const bucles = [];
+    const texto = String(ev.summary || '').replace(/\bfor\s+\w+\s+in\s+([^;]+?)\s*;?\s*do\b[\s\S]*?\bdone\b/gi, (todo, lista) => {
+      const nombres = lista.trim().split(/\s+/).filter((x) => /^[\w.-]+$/.test(x));
+      bucles.push(nombres.length
+        ? `${/\b(cat|head|tail|more)\b/.test(todo) ? 'Leyendo' : 'Recorriendo'} ${listar(nombres.map((n) => (/\.\w+$/.test(n) ? n : `${n}.md`)))}`
+        : 'Recorriendo varios archivos');
+      return '';
+    });
+    const tramos = [...bucles, ...texto.split(/\n|&&|;/).map(describirTramo).filter(Boolean)];
+    if (!tramos.length) return null;
+    const unicos = [...new Set(tramos)];
+    return listar(unicos);
+  }
+  return null;
+}
+
 function nodesFor(ev, resolved) {
   switch (ev.type) {
     case 'user': {
@@ -999,7 +1107,12 @@ function nodesFor(ev, resolved) {
     }
     case 'init': return [el(`<div class="tool">Sesión iniciada${ev.model ? ` · ${esc(ev.model)}` : ''}</div>`)];
     case 'text': return [el(`<div class="msg md ${ev.sub ? 'sub' : ''}">${md(ev.text)}</div>`)];
-    case 'tool': return [el(`<div class="tool"><b>${esc(ev.tool)}</b> ${esc(ev.summary)}</div>`)];
+    case 'tool': {
+      const humano = describirTool(ev);
+      if (!humano) return [el(`<div class="tool"><b>${esc(ev.tool)}</b> ${esc(ev.summary)}</div>`)];
+      // El comando exacto sigue ahí, a un clic: lo que cambia es qué se lee primero.
+      return [el(`<details class="tool paso"><summary>${esc(humano)}</summary><div class="cmd">${esc(ev.tool)} ${esc(ev.summary)}</div></details>`)];
+    }
     case 'subagente': return [el(`<div class="subhead" data-sub="${esc(ev.subId)}"><span class="si" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.2"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0"/></svg></span><b>${esc(ev.nombre)}</b><span class="muted">trabaja aparte</span></div>`)];
     case 'tool_error': return [el(`<div class="tool err">${esc(ev.text)}</div>`)];
     case 'stderr': return [el(`<div class="tool err">${esc(ev.text)}</div>`)];
@@ -1059,7 +1172,7 @@ function permissionCard(ev, done) {
   const live = !done && S.curSummary?.status === 'running';
   // Rojo solo para lo que no se deshace. Un comando que no se puede comprobar es ámbar: hay que
   // leerlo, pero no es lo mismo, y teñirlo todo de rojo enseña a aprobar sin mirar.
-  const c = el(`<div class="card2 ${ev.risky ? 'risky' : 'p'}" data-qid="${esc(ev.id)}"><h5>${ev.risky ? 'Acción riesgosa: ' : ev.opaco ? 'Revísalo antes: ' : ''}La skill quiere usar ${esc(ev.tool)}</h5><div class="tool pre">${esc(ev.summary)}</div>${ev.reason ? `<div class="muted">${esc(ev.reason)}</div>` : ''}</div>`);
+  const c = el(`<div class="card2 ${ev.risky ? 'risky' : 'p'}" data-qid="${esc(ev.id)}"><h5>${ev.risky ? 'Acción riesgosa: ' : ev.opaco ? 'Revísalo antes: ' : ''}${esc(describirTool(ev) || `La skill quiere usar ${ev.tool}`)}</h5><div class="tool pre">${esc(ev.summary)}</div>${ev.reason ? `<div class="muted">${esc(ev.reason)}</div>` : ''}</div>`);
   if (live) {
     const shell = ev.tool === 'Bash' || ev.tool === 'PowerShell';
     const recordar = shell ? (ev.programa ? `Permitir «${esc(ev.programa)}» siempre en esta ejecución` : '') : 'Permitir siempre en esta ejecución';
