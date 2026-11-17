@@ -1100,7 +1100,30 @@ $('#btnClose').addEventListener('click', async () => {
   const ok = await confirmModal({ title: 'Descartar esta ejecución', body: '<p>No aprueba la etapa y no desbloquea las siguientes. Los documentos que ya generó se conservan.</p>', ok: 'Descartar', tone: 'danger' });
   if (ok) await api('/api/close', { runId: S.cur });
 });
+/**
+ * Aprobar cierra la etapa y desbloquea las que dependen de ella. Si la skill solo hizo una
+ * pregunta y todavía no escribió nada, el botón verde se parece demasiado a «sí, confirmo»:
+ * el usuario cierra la etapa y se queda sin el documento. No se bloquea, se dice en voz alta.
+ */
+function faltaEntregable(sm) {
+  const s = S.state?.skills.find((x) => x.skill === sm.skill);
+  if (!sm.files?.length) return 'Esta ejecución todavía no ha escrito ningún archivo en el proyecto.';
+  if (s?.paso && !isDone(s)) return `El paso sigue en «${esc(ESTADO[s.estado] || s.estado)}»: la skill escribió archivos pero no ha cerrado su entregable.`;
+  return null;
+}
 $('#btnApprove').addEventListener('click', async () => {
+  const sm = S.curSummary; if (!sm) return;
+  const falta = faltaEntregable(sm);
+  if (falta) {
+    const ok = await confirmModal({
+      title: 'La etapa no ha entregado nada todavía',
+      body: `<p>${falta}</p><p>Si la skill te hizo una pregunta, respóndele en el cuadro de abajo: «Aprobar etapa» no es la forma de contestarle.</p>
+        <p>Aprobar ahora cierra la etapa sin documento y desbloquea las que dependen de ella.</p>`,
+      ok: 'Aprobar igual',
+      tone: 'warn',
+    });
+    if (!ok) { $('#replyText').focus(); return; }
+  }
   try { await api('/api/approve', { runId: S.cur }); } catch (e) { banner(e.message, true); }
 });
 $('#btnFresh').addEventListener('click', async () => {
