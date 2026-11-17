@@ -1057,7 +1057,9 @@ function questionCard(ev, done) {
 
 function permissionCard(ev, done) {
   const live = !done && S.curSummary?.status === 'running';
-  const c = el(`<div class="card2 ${ev.risky ? 'risky' : 'p'}" data-qid="${esc(ev.id)}"><h5>${ev.risky ? 'Acción riesgosa: ' : ''}La skill quiere usar ${esc(ev.tool)}</h5><div class="tool pre">${esc(ev.summary)}</div>${ev.reason ? `<div class="muted">${esc(ev.reason)}</div>` : ''}</div>`);
+  // Rojo solo para lo que no se deshace. Un comando que no se puede comprobar es ámbar: hay que
+  // leerlo, pero no es lo mismo, y teñirlo todo de rojo enseña a aprobar sin mirar.
+  const c = el(`<div class="card2 ${ev.risky ? 'risky' : 'p'}" data-qid="${esc(ev.id)}"><h5>${ev.risky ? 'Acción riesgosa: ' : ev.opaco ? 'Revísalo antes: ' : ''}La skill quiere usar ${esc(ev.tool)}</h5><div class="tool pre">${esc(ev.summary)}</div>${ev.reason ? `<div class="muted">${esc(ev.reason)}</div>` : ''}</div>`);
   if (live) {
     const shell = ev.tool === 'Bash' || ev.tool === 'PowerShell';
     const recordar = shell ? (ev.programa ? `Permitir «${esc(ev.programa)}» siempre en esta ejecución` : '') : 'Permitir siempre en esta ejecución';

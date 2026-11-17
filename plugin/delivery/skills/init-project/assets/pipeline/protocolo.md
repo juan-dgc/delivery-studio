@@ -28,6 +28,7 @@ Reglas de guardado, sin excepción:
 Regla de lectura:
 
 - **Para leer archivos usa tu herramienta de lectura, no la terminal.** Abrir un documento con `cat`, `head` o `sed` por la terminal hace lo mismo pero, en los entornos que piden permiso por cada comando, obliga al usuario a autorizar cada lectura. La terminal se reserva para los scripts del pipeline (`.pipeline/scripts/`) y para lo que de verdad necesita el sistema operativo. Para encontrar archivos, tus herramientas de búsqueda por nombre y por contenido; para leer varios, varias lecturas.
+- **Un comando por llamada, sin variables ni varias líneas.** Si tienes que registrar tres decisiones, son tres comandos completos, no una variable con la orden repetida en varias líneas. Un comando que se arma con variables no se puede comprobar antes de ejecutarlo, así que en los entornos que piden permiso obliga al usuario a revisarlo entero; escrito de corrido, se autoriza solo.
 
 ## 1. Preflight
 

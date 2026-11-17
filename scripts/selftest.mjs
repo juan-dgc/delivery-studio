@@ -77,6 +77,22 @@ await t('Recordar un programa en Windows guarda el ejecutable, no la unidad', as
   // «C» no es un programa: otro ejecutable del mismo disco sigue preguntando
   assert.equal(await decide(run, 'Bash', { command: 'C:\\Windows\\System32\\curl.exe http://x' }), 'PENDIENTE');
 });
+await t('Varias líneas o variables se marcan para revisar, no como peligrosas', async () => {
+  const run = mk('preguntar'); rm.runs.set(run.id, run);
+  const cmd = 'P="python3 .pipeline/scripts/pipeline.py decision set"\n$P pruebas.niveles "x"\n$P pruebas.no_funcionales "y"';
+  rm.decide(run, 'Bash', { command: cmd }, { signal: sig });
+  const ev = run.events.filter((e) => e.type === 'permission').at(-1);
+  assert.equal(ev.risky, false, 'no es peligroso: no borra ni publica nada');
+  assert.equal(ev.opaco, true, 'sí hay que leerlo: usa una variable en varias líneas');
+  assert.match(ev.reason, /variable/);
+});
+await t('Lo que no se deshace sí se marca como peligroso', async () => {
+  const run = mk('preguntar'); rm.runs.set(run.id, run);
+  rm.decide(run, 'Bash', { command: 'git push origin main' }, { signal: sig });
+  const ev = run.events.filter((e) => e.type === 'permission').at(-1);
+  assert.equal(ev.risky, true);
+  assert.equal(ev.opaco, false);
+});
 await t('La terminal de solo lectura no pide permiso', async () => {
   const run = mk('preguntar'); rm.runs.set(run.id, run);
   const leer = ['file inputs/a.pdf', 'pdftotext inputs/a.pdf -', 'wc -l evidence/EV-001.md', 'mkdir -p evidence/_texto',
