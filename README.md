@@ -6,7 +6,7 @@ Servidor local + interfaz HTML para ejecutar las skills del plugin `delivery` co
 Node 18+ y Python 3.8+ (se revisan al arrancar).
 
 ## Uso (un paso)
-Mac: doble clic en `iniciar.command`. En cualquier sistema: `npm start`.
+Mac: doble clic en `iniciar.command`. Windows: doble clic en `iniciar.bat`. En cualquier sistema: `npm start`.
 
 La primera vez, el arranque:
 1. Instala las dependencias solo.

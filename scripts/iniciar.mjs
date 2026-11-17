@@ -13,6 +13,7 @@ const LOCAL = path.join(STUDIO, 'config.local.json');
 const readJson = (p, d) => { try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch { return d; } };
 const writeJson = (p, o) => fs.writeFileSync(p, JSON.stringify(o, null, 2));
 const isMac = process.platform === 'darwin';
+const isWin = process.platform === 'win32';
 const argv = process.argv.slice(2);
 const arg = (k) => { const i = argv.indexOf(`--${k}`); return i >= 0 ? argv[i + 1] : undefined; };
 const expand = (p) => (p && p.startsWith('~') ? path.join(os.homedir(), p.slice(1)) : p);
@@ -29,6 +30,13 @@ function pickFolder(prompt) {
     const r = spawnSync('osascript', ['-e', `POSIX path of (choose folder with prompt "${prompt}")`], { encoding: 'utf8' });
     if (r.status === 0 && r.stdout.trim()) return r.stdout.trim().replace(/\/$/, '');
     return null; // cancelado
+  }
+  if (isWin) {
+    // Mismo selector de carpetas que en Mac. Si PowerShell está restringido, se pregunta por terminal.
+    const ps = `Add-Type -AssemblyName System.Windows.Forms; $d = New-Object System.Windows.Forms.FolderBrowserDialog; $d.Description = '${prompt.replace(/'/g, "''")}'; if ($d.ShowDialog() -eq 'OK') { Write-Output $d.SelectedPath }`;
+    const r = spawnSync('powershell', ['-NoProfile', '-STA', '-Command', ps], { encoding: 'utf8' });
+    if (r.error || r.status !== 0) return undefined; // sin selector disponible
+    return r.stdout.trim() || null; // vacío = el usuario canceló
   }
   return undefined; // sin selector: preguntar en la terminal
 }
@@ -94,6 +102,11 @@ if (!project) {
     if (isMac) {
       const r = spawnSync('osascript', ['-e', `button returned of (display dialog "Continuar con el proyecto:\\n${last.replace(/"/g, '')}" buttons {"Otra carpeta", "Continuar"} default button "Continuar")`], { encoding: 'utf8' });
       project = r.stdout.trim() === 'Continuar' ? last : null;
+    } else if (isWin) {
+      const ps = `Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.MessageBox]::Show('Continuar con el proyecto:' + [char]10 + '${last.replace(/'/g, "''")}', 'Delivery Studio', 'YesNo', 'Question')`;
+      const r = spawnSync('powershell', ['-NoProfile', '-STA', '-Command', ps], { encoding: 'utf8' });
+      if (r.error || r.status !== 0) { const a = await ask(`Proyecto anterior: ${last}\nEnter para continuar o escribe otra ruta: `); project = a ? path.resolve(expand(a)) : last; }
+      else project = r.stdout.trim() === 'Yes' ? last : null;
     } else {
       const a = (await ask(`Proyecto anterior: ${last}\nEnter para continuar o escribe otra ruta: `));
       project = a ? path.resolve(expand(a)) : last;

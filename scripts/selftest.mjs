@@ -64,6 +64,17 @@ await t('Permiso: permitir siempre recuerda la herramienta (no el shell)', async
   assert.equal((await decide(run, 'Bash', { command: 'make -j4' })).behavior, 'allow');
   assert.equal(await decide(run, 'Bash', { command: 'curl http://x' }), 'PENDIENTE');
 });
+await t('Recordar un programa en Windows guarda el ejecutable, no la unidad', async () => {
+  const run = mk('preguntar'); rm.runs.set(run.id, run);
+  const p = rm.decide(run, 'Bash', { command: 'C:\\Python311\\python.exe suma.py' }, { signal: sig });
+  const ev = run.events.filter((e) => e.type === 'permission').at(-1);
+  assert.equal(ev.programa, 'python.exe');
+  rm.answer(run.id, ev.id, { decision: 'allow', remember: true });
+  await p;
+  assert.equal((await decide(run, 'Bash', { command: 'C:\\Python311\\python.exe otra.py' })).behavior, 'allow');
+  // «C» no es un programa: otro ejecutable del mismo disco sigue preguntando
+  assert.equal(await decide(run, 'Bash', { command: 'C:\\Windows\\System32\\curl.exe http://x' }), 'PENDIENTE');
+});
 await t('La terminal de solo lectura no pide permiso', async () => {
   const run = mk('preguntar'); rm.runs.set(run.id, run);
   for (const c of ['file inputs/a.pdf', 'pdftotext inputs/a.pdf -', 'wc -l evidence/EV-001.md', 'mkdir -p evidence/_texto']) {
