@@ -1087,6 +1087,19 @@ function resultCard(ev) {
   return c;
 }
 
+/**
+ * En este cuadro casi siempre se escribe una línea («sí», «confirmo el plan»), así que Enter
+ * envía. El salto de línea queda donde todo el mundo lo espera cuando Enter envía: Shift+Enter,
+ * y también Alt+Enter. Cmd+Enter y Ctrl+Enter envían, por si vienes de esa costumbre.
+ */
+$('#replyText').addEventListener('keydown', (e) => {
+  if (e.key !== 'Enter' || e.isComposing) return; // isComposing: tildes y teclados que componen
+  if (e.shiftKey || e.altKey) return;             // salto de línea
+  e.preventDefault();
+  if (e.target.disabled) return;
+  $('#composer').requestSubmit();
+});
+
 $('#composer').addEventListener('submit', async (e) => {
   e.preventDefault();
   const t = $('#replyText').value.trim(); if (!t || !S.cur) return;
@@ -1406,6 +1419,23 @@ function avisar(titulo, cuerpo, agudo = false) {
 }
 
 /** Qué eventos merecen sacar al usuario de lo que está haciendo. */
+/**
+ * Cuando la skill termina su turno y la pelota pasa al usuario, el cursor va al cuadro de
+ * respuesta. No se hace si lo que espera es una tarjeta (pregunta o permiso), que se responde
+ * con sus botones, ni si el usuario está escribiendo en otro campo.
+ */
+function enfocarRespuesta() {
+  setTimeout(() => {
+    const sm = S.curSummary, t = $('#replyText');
+    if (!sm || sm.status !== 'esperando' || sm.pending > 0 || sm.huerfana) return;
+    if (!t || t.disabled || $('#composer').hidden) return;
+    const a = document.activeElement;
+    if (a && a !== document.body && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) && a !== t) return;
+    if (!$('#tab-ejecucion').classList.contains('on')) return;
+    t.focus();
+  }, 120); // después de que updateHead haya habilitado el cuadro
+}
+
 function avisoDeEvento(runId, ev) {
   const r = S.runs.find((x) => x.id === runId), quien = r?.title || 'Una skill';
   if (ev.type === 'question') return avisar('Te están preguntando', `${quien} necesita tu respuesta para continuar.`, true);
@@ -1420,6 +1450,7 @@ function onRunEvent({ runId, ev }) {
   if (ev.type === 'alcance' && S.curSummary) S.curSummary.alcance = ev.alcance;
 
   if (ev.type === 'status' && ev.status === 'running' && S.curSummary) { S.curSummary.turnoDesde = ev.ts; PULSO.ts = 0; PULSO.chars = 0; }
+  if (ev.type === 'status' && ev.status === 'esperando') enfocarRespuesta();
   if (ev.type === 'status' && S.curSummary) { S.curSummary.status = ev.status; if (ev.status !== 'running') renderLog(); else updateHead(); renderRuns(); return; }
   if (ev.type === 'resolved') { renderLog(); return; }
   if (ev.type === 'result' && S.curSummary) { S.curSummary.cost = ev.cost || S.curSummary.cost; }
