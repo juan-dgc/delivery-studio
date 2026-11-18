@@ -633,12 +633,14 @@ button{/* SECUNDARIO (sin clase): sin relleno en reposo. El hover lo rellena. */
   background:transparent;border:1px solid var(--bd);
   text-shadow:none;box-shadow:none;cursor:pointer;position:relative;
   transition:border-color .16s,box-shadow .16s,transform .12s,color .16s,background .16s}
-/* excepción: la flecha que pliega el menú. No debe parecer un botón: ni fondo ni borde ni caja
-   en ningún estado. Solo la flecha, que se enciende al pasar por encima o al recibir el foco. */
-.sidetog{min-height:0;padding:0;width:24px;height:24px;gap:0;
+/* excepción: la flecha que pliega el menú. En reposo no parece un botón: ni fondo ni borde.
+   Encendida usa exactamente el mismo lenguaje que una opción del menú, para que no desentone:
+   relleno plano del mismo azul (nada de degradado), aro fino, halo y el icono en el mismo tono. */
+.sidetog{min-height:0;padding:0;width:26px;height:26px;gap:0;border-radius:var(--r-md);
   background:none;border:0;box-shadow:none;color:var(--dim);cursor:pointer}
-.sidetog:hover,.sidetog:focus-visible{background:none;border:0;box-shadow:none;outline:0;color:var(--pri-t)}
-.sidetog:hover svg,.sidetog:focus-visible svg{filter:drop-shadow(0 0 6px rgba(74,103,255,.6))}
+.sidetog:hover,.sidetog:focus-visible{outline:0;border:0;color:#fff;background:rgba(74,103,255,.26);
+  box-shadow:inset 0 0 0 1px rgba(143,162,255,.5),0 0 16px rgba(74,103,255,.35)}
+.sidetog:hover svg,.sidetog:focus-visible svg{color:#B9C6FF}
 /* excepción: menú lateral. Plano, sin degradado. */
 .tabs button{justify-content:flex-start;min-height:0;gap:11px;padding:10px 12px;
   background:transparent;border:0;box-shadow:none;text-shadow:none;
