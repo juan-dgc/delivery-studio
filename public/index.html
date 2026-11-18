@@ -52,7 +52,7 @@
         <div class="logBody" id="logBody"><p class="muted">Elige una skill en Rutas y pulsa Ejecutar.</p></div>
         <div class="latido" id="latido" role="status" aria-live="off" hidden></div>
         <form class="composer" id="composer" hidden>
-          <textarea id="replyText" rows="2" placeholder="Responder a la skill. Enter envía, Shift+Enter hace salto de línea."></textarea>
+          <textarea id="replyText" aria-label="Responder a la skill" rows="2" placeholder="Responder a la skill. Enter envía, Shift+Enter hace salto de línea."></textarea>
           <div class="row">
             <button type="submit" class="primary">Enviar</button>
             <button type="button" id="btnNext" class="primary" hidden>Continuar con la tanda siguiente</button>
@@ -107,7 +107,7 @@
       <div class="card">
         <h3>Fuentes externas (sources.md)</h3>
         <p class="muted">Repositorios, consultas de Jira, enlaces y la URL del entorno de pruebas. Lo lee <code>ingest-sources</code>.</p>
-        <textarea id="sources" rows="16" spellcheck="false" placeholder="Disponible cuando el proyecto esté inicializado"></textarea>
+        <textarea id="sources" aria-label="Fuentes del proyecto (inputs/sources.md)" rows="16" spellcheck="false" placeholder="Disponible cuando el proyecto esté inicializado"></textarea>
         <div class="row"><button id="srcSave" class="primary">Guardar sources.md</button><span id="srcMsg" class="muted"></span></div>
       </div>
     </div>
