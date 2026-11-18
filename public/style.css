@@ -263,10 +263,8 @@ select[data-dd]{display:none!important}
 
 /* ---- menú lateral plegable: se queda en iconos y conserva el indicador de la pestaña activa ---- */
 .app.mini{--side:64px}
-.sidetog{flex:none;margin-left:auto;width:26px;height:26px;display:grid;place-items:center;color:var(--dim);background:transparent;border:0;border-radius:var(--r-sm);cursor:pointer;transition:background .14s,color .14s}
-.sidetog:hover{background:var(--s3);color:var(--ink)}
-.sidetog:focus-visible{outline:2px solid var(--pri);outline-offset:1px}
-.sidetog svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform .18s}
+.sidetog{flex:none;margin-left:auto}
+.sidetog svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform .18s,filter .16s}
 .mini .sidetog svg{transform:rotate(180deg)}
 .mini .side{padding:18px 8px}
 .mini .brand{flex-direction:column;gap:10px;padding:2px 0}
@@ -622,6 +620,7 @@ button.icon-btn:hover:not(:disabled),button.x:hover:not(:disabled){background:va
      .icon-btn y .x   botones de icono (×, flechas)
      .addroute        píldora punteada de "añadir"
      .tabs button     menú lateral
+     .sidetog         la flecha que pliega el menú: solo la flecha
    ================================================================== */
 button{/* SECUNDARIO (sin clase): sin relleno en reposo. El hover lo rellena. */
   --d:#1B2238;--m:#35367E;--n:#5667BF;
@@ -634,6 +633,12 @@ button{/* SECUNDARIO (sin clase): sin relleno en reposo. El hover lo rellena. */
   background:transparent;border:1px solid var(--bd);
   text-shadow:none;box-shadow:none;cursor:pointer;position:relative;
   transition:border-color .16s,box-shadow .16s,transform .12s,color .16s,background .16s}
+/* excepción: la flecha que pliega el menú. No debe parecer un botón: ni fondo ni borde ni caja
+   en ningún estado. Solo la flecha, que se enciende al pasar por encima o al recibir el foco. */
+.sidetog{min-height:0;padding:0;width:24px;height:24px;gap:0;
+  background:none;border:0;box-shadow:none;color:var(--dim);cursor:pointer}
+.sidetog:hover,.sidetog:focus-visible{background:none;border:0;box-shadow:none;outline:0;color:var(--pri-t)}
+.sidetog:hover svg,.sidetog:focus-visible svg{filter:drop-shadow(0 0 6px rgba(74,103,255,.6))}
 /* excepción: menú lateral. Plano, sin degradado. */
 .tabs button{justify-content:flex-start;min-height:0;gap:11px;padding:10px 12px;
   background:transparent;border:0;box-shadow:none;text-shadow:none;
