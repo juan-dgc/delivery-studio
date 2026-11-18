@@ -586,7 +586,7 @@ $('#modal').addEventListener('mousedown', (e) => { if (e.target.id === 'modal') 
 
 function openAddRoute() {
   const routes = allRoutes();
-  openModal(`<button class="x" data-mclose>×</button><h3>Agregar ruta</h3>
+  openModal(`<button class="x bare" data-mclose>×</button><h3>Agregar ruta</h3>
     <p class="muted">Un tramo nuevo continúa tu camino: por defecto arranca en el primer paso pendiente y no repite lo ya hecho.</p>
     <div class="rlist">${routes.map((r) => {
       const ids = r.skills.filter((id) => skillOf(id));
@@ -695,10 +695,10 @@ function renderResumen() {
 
 // ---- lotes de historias (alcances del pipeline)
 async function openLotes() {
-  openModal('<button class="x" data-mclose>×</button><h3>Lotes de historias</h3><p class="muted">Cargando…</p>');
+  openModal('<button class="x bare" data-mclose>×</button><h3>Lotes de historias</h3><p class="muted">Cargando…</p>');
   let d = { lotes: [] };
   try { d = await api('/api/lotes'); } catch (e) {
-    return openModal(`<button class="x" data-mclose>×</button><h3>Lotes de historias</h3><p class="muted">${esc(e.message)}</p>`);
+    return openModal(`<button class="x bare" data-mclose>×</button><h3>Lotes de historias</h3><p class="muted">${esc(e.message)}</p>`);
   }
   pintarLotes(d);
 }
@@ -706,7 +706,7 @@ function pintarLotes(d) {
   const filas = d.lotes.length
     ? `<table class="ut"><thead><tr><th>Lote</th><th>Historias</th><th>Rango</th><th></th></tr></thead><tbody>${d.lotes.map((l) => `<tr><td>${esc(l.nombre)}</td><td>${l.historias}</td><td class="muted">${esc(l.desde)} a ${esc(l.hasta)}</td><td><button class="sm" data-ed="${esc(l.nombre)}">Editar</button></td></tr>`).join('')}</tbody></table>`
     : '<p class="muted">Todavía no hay lotes. «backlog» (todo) y «proyecto» funcionan sin definirse.</p>';
-  openModal(`<button class="x" data-mclose>×</button><h3>Lotes de historias</h3>
+  openModal(`<button class="x bare" data-mclose>×</button><h3>Lotes de historias</h3>
     <p class="muted">Un lote agrupa historias para trabajar por partes: cada paso por lote (historias, casos, desarrollo) se ejecuta y se aprueba por separado.</p>
     ${filas}
     <h4 class="sep">Crear o cambiar un lote</h4>
@@ -785,7 +785,7 @@ function renderBuilder() {
   // Repintar la ventana entera es fácil de romper: si el dibujado falla a medias, antes quedaba la
   // ventana vacía (fondo y nada más) y el usuario no tenía ni el error. Ahora se ve qué pasó.
   try { pintarBuilder(); } catch (e) {
-    openModal(`<button class="x" data-mclose>×</button><h3>No pude dibujar el constructor</h3>
+    openModal(`<button class="x bare" data-mclose>×</button><h3>No pude dibujar el constructor</h3>
       <p class="muted">La ruta sigue guardada como estaba. Cuéntame este mensaje y lo arreglo.</p>
       <pre class="err">${esc(e && e.message ? e.message : String(e))}</pre>
       <div class="row"><button class="primary" data-mclose>Cerrar</button></div>`);
@@ -810,7 +810,7 @@ function pintarBuilder() {
     const n = cuantas(s.skill), marca = porEntregable(s) ? (n ? `✓ ${n}` : '+') : (n ? '✓' : '+');
     return `<div class="bs ${n ? 'used' : ''}" data-add="${esc(s.skill)}"><button type="button" class="icon-btn binfo" data-info="${esc(s.skill)}" title="Qué hace este paso" aria-expanded="false" aria-label="Qué hace ${esc(s.nombre)}">${ico}</button><span class="bn">${esc(s.nombre)}</span><b>${marca}</b></div>${B.sel === s.skill ? selectorEntregables(s) : ''}`;
   };
-  openModal(`<button class="x" data-mclose>×</button><h3>${B.id ? 'Editar ruta' : 'Armar mi ruta'}</h3>
+  openModal(`<button class="x bare" data-mclose>×</button><h3>${B.id ? 'Editar ruta' : 'Armar mi ruta'}</h3>
     <label>Nombre<input id="bName" value="${esc(B.nombre)}" placeholder="Ej.: Preventa rápida"></label>
     <label>Partir de una ruta existente (opcional)<select id="bBase"><option value="">Vacía</option>${allRoutes().map((r) => `<option value="${esc(r.id)}">${esc(r.nombre)}</option>`).join('')}</select></label>
     <div class="bcols">
