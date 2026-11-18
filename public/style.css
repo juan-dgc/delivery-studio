@@ -260,8 +260,17 @@ select[data-dd]{display:none!important}
 /* ---- barra lateral (.side) ---- */
 .side{display:flex;flex-direction:column;padding:18px 14px;gap:18px;min-height:0}
 .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;padding:2px 8px}
-.logo{width:26px;height:26px;border-radius:8px;background:var(--aurora);flex:none;display:grid;place-items:center}
+.logo{width:26px;height:26px;border-radius:8px;background:var(--aurora);flex:none;padding:0;border:0;
+  box-shadow:none;display:grid;place-items:center;cursor:pointer}
 .logo svg{width:15px;height:15px;fill:none;stroke:#fff;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+/* Cada clic cambia el icono. El rebote corto es la única señal de que cambió algo. */
+.logo.pop{animation:logopop .36s cubic-bezier(.34,1.56,.64,1)}
+@keyframes logopop{
+  0%{transform:scale(1) rotate(0)}
+  28%{transform:scale(.82) rotate(-8deg)}
+  56%{transform:scale(1.12) rotate(6deg)}
+  78%{transform:scale(.96) rotate(-2deg)}
+  100%{transform:scale(1) rotate(0)}}
 .side-foot{margin-top:auto;border:1px solid var(--line-soft);background:var(--s2);border-radius:var(--r-lg);padding:11px 13px}
 .side{background:var(--s1);border-right:1px solid var(--line-soft);backdrop-filter:none}
 
@@ -399,11 +408,11 @@ button.approve{--d:#03402A;--m:#0B8A5C;--n:#18B574}
 button.danger{--d:#701026;--m:#B3193F;--n:#FF3D6E}
 button.warn{--d:#9E4515;--m:#B86300;--n:#ED7818;--bd:#CC711B}
 button.sm{min-height:30px;padding:0 13px;font-size:13px}
-button:not(.sidetog):hover:not(:disabled){border-color:var(--n);color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.55);
+button:not(.bare):hover:not(:disabled){border-color:var(--n);color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.55);
   background:linear-gradient(100deg,var(--d) 0%,var(--n) 74%,var(--mf) 100%);
   box-shadow:0 0 0 1px var(--n),0 0 9px 1px color-mix(in srgb,var(--n) 65%,transparent)}
-button:not(.sidetog):active:not(:disabled){transform:translateY(1px)}
-button:not(.sidetog):disabled{opacity:.45;filter:grayscale(.5);box-shadow:none;cursor:not-allowed}
+button:not(.bare):active:not(:disabled){transform:translateY(1px)}
+button:not(.bare):disabled{opacity:.45;filter:grayscale(.5);box-shadow:none;cursor:not-allowed}
 button:focus-visible{outline:3px solid #FFFFFF;outline-offset:2px}
 
 /* ---- ejecución (.run, .log, .opts) ---- */
@@ -622,9 +631,10 @@ button.icon-btn:hover:not(:disabled),button.x:hover:not(:disabled){background:va
      .icon-btn y .x   botones de icono (×, flechas)
      .addroute        píldora punteada de "añadir"
      .tabs button     menú lateral
-     .sidetog         la flecha que pliega el menú: solo la flecha
+     .bare            botones sin cromo: se definen enteros en su propia regla
+                      (.sidetog la flecha del menú, .logo el icono de marca)
    ================================================================== */
-button:not(.sidetog){/* SECUNDARIO (sin clase): sin relleno en reposo. El hover lo rellena. */
+button:not(.bare){/* SECUNDARIO (sin clase): sin relleno en reposo. El hover lo rellena. */
   --d:#1B2238;--m:#35367E;--n:#5667BF;
   --mf:color-mix(in srgb,var(--m) 77%,#090C16);
   --bd:color-mix(in srgb,var(--n) 65%,var(--s2));
@@ -635,11 +645,13 @@ button:not(.sidetog){/* SECUNDARIO (sin clase): sin relleno en reposo. El hover 
   background:transparent;border:1px solid var(--bd);
   text-shadow:none;box-shadow:none;cursor:pointer;position:relative;
   transition:border-color .16s,box-shadow .16s,transform .12s,color .16s,background .16s}
-/* excepción: la flecha que pliega el menú. No hereda nada del sistema de botones (está excluida
-   arriba con :not), así que se define entera aquí y ninguna regla compite con ella. En reposo es
-   solo la flecha; encendida usa los mismos valores que una opción del menú, para no desentonar:
-   relleno plano del mismo azul, sin degradado, el mismo aro y el mismo halo. El foco de teclado
-   lo pone la regla global :focus-visible, igual que en el resto de la app. */
+/* excepción .bare: no heredan nada del sistema de botones (están excluidas arriba con :not), así
+   que cada una se define entera y ninguna regla compite con ella. El foco de teclado lo pone la
+   regla global :focus-visible, igual que en el resto de la app.
+
+   La flecha que pliega el menú: en reposo es solo la flecha; encendida usa los mismos valores que
+   una opción del menú, para no desentonar: relleno plano del mismo azul, sin degradado, el mismo
+   aro y el mismo halo. */
 .sidetog{display:grid;place-items:center;flex:none;margin-left:auto;width:26px;height:26px;padding:0;
   border:0;border-radius:var(--r-md);background:none;box-shadow:none;color:var(--dim);cursor:pointer;
   transition:background .16s,color .16s,box-shadow .16s}

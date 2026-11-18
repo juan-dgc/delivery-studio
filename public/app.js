@@ -98,6 +98,33 @@ function switchTab(name) {
 }
 $('#tabs').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) switchTab(b.dataset.tab); });
 
+// ---- icono de marca. Cinco lecturas de lo que hace la app; cada clic pasa a la siguiente.
+const MARCAS = [
+  ['pasos', '<path d="M4 17.5h4.5V13H13V8.5h7"/>'],
+  ['chispa', '<path d="M12 3.2l2.1 6.7 6.7 2.1-6.7 2.1-2.1 6.7-2.1-6.7-6.7-2.1 6.7-2.1z"/>'],
+  ['entrega', '<path d="M3.5 8.4l8.5-4.6 8.5 4.6v7.2L12 20.2l-8.5-4.6z"/><path d="M3.5 8.4l8.5 4.6 8.5-4.6"/><path d="M12 13v7.2"/>'],
+  ['aprobado', '<circle cx="12" cy="12" r="8.4"/><path d="M8.3 12.3l2.6 2.6 4.8-5.4"/>'],
+  ['envío', '<path d="M20.8 3.6L3.6 10.4l6.6 2.9 2.9 6.6z"/><path d="M20.8 3.6l-10.6 9.7"/>'],
+];
+function pintarMarca(i, rebote) {
+  const b = $('#logoBtn'); if (!b) return;
+  const [nombre, glifo] = MARCAS[((i % MARCAS.length) + MARCAS.length) % MARCAS.length];
+  b.querySelector('svg').innerHTML = glifo;
+  b.title = `Icono «${nombre}». Pulsa para cambiarlo`;
+  if (!rebote) return;
+  b.classList.remove('pop');
+  void b.offsetWidth; // reinicia la animación si vuelves a pulsar antes de que acabe
+  b.classList.add('pop');
+}
+try { S.marca = Number(localStorage.getItem('ds_marca')) || 0; } catch { /* sin memoria del navegador */ }
+$('#logoBtn')?.addEventListener('click', () => {
+  S.marca = (S.marca + 1) % MARCAS.length;
+  try { localStorage.setItem('ds_marca', String(S.marca)); } catch { /* sin memoria del navegador */ }
+  pintarMarca(S.marca, true);
+});
+$('#logoBtn')?.addEventListener('animationend', (e) => e.target.classList.remove('pop'));
+pintarMarca(S.marca || 0, false);
+
 // ---- menú lateral plegable. Plegado deja los iconos y el indicador de la pestaña activa; el
 // nombre pasa al title y al aria-label, porque al esconder el texto el botón se queda sin nombre.
 const MINI = 'ds_side_mini';
