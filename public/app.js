@@ -89,6 +89,8 @@ const HECHO = new Set(['COMPLETADO', 'OMITIDO']);
 function switchTab(name) {
   const prev = $('#tabs button.on')?.dataset.tab;
   if (name === 'docs' && prev !== 'docs') TREE_OPEN = null;
+  // El panel del paso pertenece a Rutas: fuera de ahí no tiene contexto y estorba al volver.
+  if (name !== 'rutas') cerrarDrawer();
   $$('#tabs button').forEach((b) => b.classList.toggle('on', b.dataset.tab === name));
   $$('.tab').forEach((t) => t.classList.toggle('on', t.id === `tab-${name}`));
   $('#pageTitle').textContent = { resumen: 'Resumen', rutas: 'Rutas', ejecucion: 'Ejecución', docs: 'Documentos', insumos: 'Insumos', cuenta: 'Cuenta' }[name] || '';
@@ -310,7 +312,7 @@ function pintarRutas() {
   const doneSeg = (o) => o.skills.map(entradaRuta).filter((x) => x && x.estado !== 'SIN_ESTADO' && !x.opcional).every((x) => isDone(x) && !x.activa);
   $('#rtabs').innerHTML = (open.length > 1 ? '<span class="rlabel">Tramos de tu camino</span>' : '<span class="rlabel">Tu ruta</span>') + open.map((o, n) => {
     const live = o.skills.some((id) => corriendo.has(baseId(id))), ok = doneSeg(o);
-    return `<div class="rtab ${o.id === cur.id ? 'on' : ''} ${ok ? 'ok' : ''}" data-rid="${esc(o.id)}"><span class="tn">${ok ? '✓' : n + 1}</span><span>${esc(o.nombre)}${o.desde ? ` <small>desde ${esc(skillOf(o.desde)?.nombre || o.desde)}</small>` : ''}</span>${live ? '<i class="dot"></i>' : ''}<button class="x icon-btn" data-close="${esc(o.id)}" title="Quitar este tramo" aria-label="Quitar este tramo">×</button></div>`;
+    return `<div class="rtab ${o.id === cur.id ? 'on' : ''} ${ok ? 'ok' : ''}" data-rid="${esc(o.id)}"><span class="tn">${ok ? '✓' : n + 1}</span><span>${esc(o.nombre)}${o.desde ? ` <small>desde ${esc(skillOf(o.desde)?.nombre || o.desde)}</small>` : ''}</span>${live ? '<i class="dot"></i>' : ''}<button class="x icon-btn" data-close="${esc(o.id)}" title="Quitar este tramo" aria-label="Quitar este tramo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>`;
   }).join('') + '<button class="ghost addroute" id="addRoute">+ Continuar con otra ruta</button>' + selectorLote();
   renderSugerencia(open, cur);
 
@@ -485,9 +487,12 @@ function closeModal() {
 function cerrarDrawer() {
   const d = $('#drawer');
   if (d.hidden) return;
+  // Devolver el foco solo si estaba dentro del panel: si se cierra al cambiar de pestaña, el
+  // foco ya está en la pestaña nueva y quitárselo de debajo sería peor que no devolverlo.
+  const dentro = d.contains(document.activeElement);
   d.hidden = true;
   const f = S.focoDrawer; S.focoDrawer = null;
-  if (f && document.contains(f)) f.focus?.();
+  if (dentro && f && document.contains(f)) f.focus?.();
 }
 // Escape cierra lo de encima: primero el desplegable, luego el modal, luego el panel.
 document.addEventListener('keydown', (e) => {
@@ -815,7 +820,7 @@ function pintarBuilder() {
     <label>Partir de una ruta existente (opcional)<select id="bBase"><option value="">Vacía</option>${allRoutes().map((r) => `<option value="${esc(r.id)}">${esc(r.nombre)}</option>`).join('')}</select></label>
     <div class="bcols">
       <div class="bcol"><h4>Skills disponibles</h4>${groups.map((g) => `<div class="g">${esc(g)}</div>${st.skills.filter((s) => s.grupo === g).map(fila).join('')}`).join('')}</div>
-      <div class="bcol"><h4>Mi ruta (${B.skills.length})</h4>${B.skills.length ? B.skills.map((id, i) => `<div class="bs" data-i="${i}"><span>${i + 1}. ${esc(entradaRuta(id)?.nombre || id)}${hint(id)}</span><span class="bctl"><button class="icon-btn" data-up title="Subir" aria-label="Subir">↑</button><button class="icon-btn" data-down title="Bajar" aria-label="Bajar">↓</button><button class="icon-btn" data-rm title="Quitar" aria-label="Quitar">✕</button></span></div>`).join('') : '<p class="muted">Agrega skills con el botón +.</p>'}</div>
+      <div class="bcol"><h4>Mi ruta (${B.skills.length})</h4>${B.skills.length ? B.skills.map((id, i) => `<div class="bs" data-i="${i}"><span>${i + 1}. ${esc(entradaRuta(id)?.nombre || id)}${hint(id)}</span><span class="bctl"><button class="icon-btn" data-up title="Subir" aria-label="Subir"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5.5 11.5L12 5l6.5 6.5"/></svg></button><button class="icon-btn" data-down title="Bajar" aria-label="Bajar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5.5 12.5L12 19l6.5-6.5"/></svg></button><button class="icon-btn" data-rm title="Quitar" aria-label="Quitar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></span></div>`).join('') : '<p class="muted">Agrega skills con el botón +.</p>'}</div>
     </div>
     <div class="row"><button class="primary" id="bSave" ${bMotivos(problemas).length ? 'disabled' : ''}>Guardar y abrir</button>${problemas.length ? '<button class="warn primary" id="bFix">Agregar lo que falta</button>' : ''}<span class="muted" id="bMsg">${esc(bMotivos(problemas).join(' '))}</span></div>`);
   $$('#mbox .bcol').forEach((c, i) => { if (scroll[i] != null) c.scrollTop = scroll[i]; });

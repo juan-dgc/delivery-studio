@@ -50,7 +50,7 @@ main{flex:1;min-height:0;overflow:hidden}
 .bs{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:5px 8px;border-radius:var(--r-sm);cursor:pointer}.bs:hover{background:var(--s3)}.bs.used{color:var(--dim)}
 .bs[data-i]{cursor:default}.bs small.warn{display:block;color:var(--warn)}
 .bs .bn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.bs .binfo{flex:none;min-height:22px;min-width:22px;padding:0 3px;color:var(--dim)}
+.bs .binfo{flex:none;width:22px;height:22px;color:var(--dim)}
 /* Selector de entregables de la revisión independiente, desplegado bajo su fila. */
 .revsel{margin:2px 0 8px;padding:8px 10px;background:var(--s1);border:1px solid var(--line);border-radius:var(--r-sm)}
 .revsel p{margin:0 0 6px}.revsel .g{margin:8px 0 2px}
@@ -336,8 +336,7 @@ select[data-dd]{display:none!important}
   display:grid;place-items:center;line-height:1;font-size:24px;font-weight:600;
   border:0;border-radius:var(--r-md);background:none;box-shadow:none;color:var(--mut);cursor:pointer;
   transition:background .16s,color .16s,box-shadow .16s}
-.drawer .x:hover,.mbox .x:hover{color:#fff;background:rgba(74,103,255,.26);
-  box-shadow:inset 0 0 0 1px rgba(143,162,255,.5),0 0 16px rgba(74,103,255,.35)}
+
 .mbox,.drawer{background:var(--s1);border:1px solid var(--line);box-shadow:0 24px 70px rgba(0,0,0,.6)}
 @media (max-width:768px){.top h1{font-size:17px}.auth{gap:6px}.auth button{padding:5px 10px;min-height:32px;font-size:12px}.chip{font-size:12px;padding:2px 8px}.banner{padding:8px 16px;font-size:13px}}
 
@@ -412,7 +411,6 @@ button:where(:not(.bare)):disabled{opacity:.45;filter:grayscale(.5);box-shadow:n
 button:focus-visible{outline:3px solid #FFFFFF;outline-offset:2px}
 
 /* ---- ejecución (.run, .log, .opts) ---- */
-.bctl button{padding:0 7px;min-height:26px;margin-left:3px}
 .run{padding:10px 12px;border-radius:var(--r-md);cursor:pointer;border:1px solid transparent;border-left:3px solid var(--line)}
 .run:hover{background:var(--s3)}
 .run.on{background:var(--s3);border-color:var(--line);border-left-color:var(--pri)}
@@ -465,11 +463,9 @@ details.tool.paso .cmd{font:12px var(--mono);color:var(--dim);white-space:pre-wr
 .card2 h5{margin:0 0 6px;font-size:13px}
 .card2 .tool{white-space:pre-wrap;overflow-wrap:anywhere}
 .opts{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0;padding:12px 14px;border:1px solid var(--pri);background:var(--t-pri);border-radius:var(--r-lg)}
-.opts .muted{width:100%;font-size:12px}
-.opts button{text-align:left;border-color:var(--pri);color:var(--pri-t)}
+.opts .muted{width:100%;font-size:12px}.opts button{text-align:left;border-color:var(--pri);color:var(--pri-t);min-height:30px;justify-content:flex-start}
 .opts button:hover:not(:disabled){color:#fff}
 .bctl{display:inline-flex;gap:2px}
-.bctl button{margin:0}
 .run,.run.on,.run:hover{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border-radius:var(--r-md);background:var(--s1);border:1px solid var(--line);border-left:1px solid var(--line);transition:filter .16s,box-shadow .16s,border-color .16s}
 .run:hover{filter:brightness(1.15);border-color:var(--rc,var(--line-hi));box-shadow:0 0 18px color-mix(in srgb,var(--rc,#8EA0E0) 35%,transparent)}
 .run{--rc:#8EA0E0}
@@ -499,15 +495,20 @@ details.tool.paso .cmd{font:12px var(--mono);color:var(--dim);white-space:pre-wr
 
 @media (prefers-reduced-motion:reduce){.run .rst .spin{animation:none}}
 
-/* opciones del chat: mismo botón, texto largo alineado a la izquierda */
-.opts button,.bctl button{min-height:30px;justify-content:flex-start;text-align:left}
-
-/* excepción: botones de icono. Sin relleno; el glifo es el botón. */
-button:where(:not(.bare)).icon-btn,button:where(:not(.bare)).x{min-height:28px;min-width:28px;padding:0 6px;gap:0;
-  background:none;border:1px solid transparent;color:var(--mut);
-  text-shadow:none;border-radius:var(--r-sm);line-height:1}
-button:where(:not(.bare)).icon-btn:hover:not(:disabled),button:where(:not(.bare)).x:hover:not(:disabled){background:var(--s3);border-color:var(--n);color:#fff;
-  box-shadow:0 0 0 1px var(--n),0 0 8px 1px color-mix(in srgb,var(--n) 55%,transparent)}
+/* excepción: botones de icono (flechas, ✕, ⓘ). Cuadrados y con el icono centrado por geometría:
+   el contenido es un SVG, no un glifo de texto, que se apoya en la línea base y nunca queda
+   centrado sin compensar a ojo la fuente. Se encienden como la flecha del menú. */
+button:where(:not(.bare)).icon-btn,button:where(:not(.bare)).x{width:28px;height:28px;min-height:0;min-width:0;
+  padding:0;gap:0;display:grid;place-items:center;line-height:1;
+  background:none;border:0;color:var(--mut);text-shadow:none;box-shadow:none;border-radius:var(--r-md);
+  cursor:pointer;transition:background .16s,color .16s,box-shadow .16s}
+button:where(:not(.bare)).icon-btn svg,button:where(:not(.bare)).x svg{width:14px;height:14px;
+  fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+/* un solo encendido para todos los botones de icono, incluidas las X de cerrar */
+.drawer .x:hover,.mbox .x:hover,
+button:where(:not(.bare)).icon-btn:hover:not(:disabled),button:where(:not(.bare)).x:hover:not(:disabled){
+  color:#fff;background:rgba(74,103,255,.26);
+  box-shadow:inset 0 0 0 1px rgba(143,162,255,.5),0 0 16px rgba(74,103,255,.35)}
 
 /* excepción: añadir ruta. Píldora punteada que solo se enciende al pasar. */
 .addroute{min-height:30px;height:30px;padding:0 12px;margin:0 0 0 8px;border-radius:99px;
@@ -668,8 +669,8 @@ button:where(:not(.bare)){/* SECUNDARIO (sin clase): sin relleno en reposo. El h
 .rtabs{display:flex;flex-wrap:wrap;gap:4px;align-items:stretch;margin-bottom:20px;border-bottom:1px solid var(--line-soft);min-height:44px}.rtab{display:flex;align-items:center;gap:8px;padding:0 6px 0 12px;cursor:pointer;color:var(--mut);border-bottom:2px solid transparent;margin-bottom:-1px;height:34px;border-radius:9px 9px 0 0}
 .rtab.on{color:var(--ink);font-weight:600;border-color:var(--pri)}
 .rtab small{font-weight:400;color:var(--dim)}
-.rtab .x{border:0;background:none;padding:0 6px;min-height:0;font-size:16px;color:var(--dim);line-height:1}
-.rtab .x:hover{color:var(--bad);background:none}
+.rtab .x{width:22px;height:22px;color:var(--dim)}
+.rtab .x svg{width:12px;height:12px}
 .rtab .dot{margin:0}
 .rtab .x.icon-btn{margin-left:2px}
 /* tramos del camino */
