@@ -315,8 +315,7 @@ select[data-dd]{display:none!important}
 .cm-l li{padding:1px 0}
 .cm-f{display:flex;justify-content:flex-end;gap:10px}
 /* ventanas de confirmación compactas */
-.mbox:has(.cm){width:min(480px,100%);padding:20px 22px}
-.cm{gap:12px;max-width:none}
+.mbox:has(.cm){width:min(480px,100%);padding:20px 22px}.cm{gap:14px;max-width:480px;display:flex;flex-direction:column}
 .cm-h h3{font-size:16px}
 .cm-b p{margin:0 0 6px;font-size:14px;line-height:1.5}
 .cm-b p:last-child{margin-bottom:0}
@@ -329,25 +328,20 @@ select[data-dd]{display:none!important}
 .drawer{position:fixed;top:0;right:0;bottom:0;width:440px;max-width:100vw;background:var(--s1);border-left:1px solid var(--line);box-shadow:-20px 0 50px #0008;padding:24px 26px;overflow:auto;z-index:30}
 .drawer h2{margin:0 0 2px;font-size:20px}
 .drawer h4{margin:18px 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--mut)}
-.drawer .cmd{font:12px var(--mono);color:var(--dim)}
-.lockmsg{display:flex;gap:10px;align-items:flex-start;color:#FF9FB3;font-size:13px;margin:12px 0 4px}
+.drawer .cmd{font:12px var(--mono);color:var(--dim)}.lockmsg{display:flex;gap:10px;align-items:flex-start;color:var(--mut);font-size:13px;margin:12px 0 4px}
 .lockmsg .lockic{flex:none;margin-top:3px}
-.lockmsg{color:var(--mut)}
 
 /* ---- ventanas (.modal, .mbox, .cm) ---- */
 .drawer .x,.mbox .x{position:absolute;right:14px;top:10px;font-size:24px;padding:4px 10px;min-height:0;color:var(--mut)}
 .mbox,.drawer{background:var(--s1);border:1px solid var(--line);box-shadow:0 24px 70px rgba(0,0,0,.6)}
 @media (max-width:768px){.top h1{font-size:17px}.auth{gap:6px}.auth button{padding:5px 10px;min-height:32px;font-size:12px}.chip{font-size:12px;padding:2px 8px}.banner{padding:8px 16px;font-size:13px}}
 
-.drawer .x,.mbox .x{border:0;background:none}
-
-/* ---- tarjetas de cuenta y resumen (.acard) ---- */
+.drawer .x,.mbox .x{border:0;background:none}/* ---- tarjetas de cuenta y resumen (.acard) ---- */
 /* cuenta y consumo */
-.acct{display:grid;grid-template-columns:minmax(300px,380px) 1fr;gap:18px;align-items:start;padding:4px 0 40px}
+.acct{display:grid;grid-template-columns:minmax(300px,380px) 1fr;gap:var(--g);align-items:stretch;padding:0 0 40px;--g:16px}
 @media (max-width:1100px){.acct{grid-template-columns:1fr}}
 .acard{background:var(--s2);border:1px solid var(--line-hi);border-radius:var(--r-lg,14px);padding:18px 20px}
-.acard h3{margin:0;font-size:16px}
-.acard h4{margin:18px 0 8px;font-size:13px;color:var(--mut);text-transform:uppercase;letter-spacing:.06em}
+.acard h3{margin:0;font-size:16px}.acard h4{margin:22px 0 8px;font-size:13px;color:var(--mut);text-transform:uppercase;letter-spacing:.06em}
 .kv2{display:grid;grid-template-columns:auto 1fr;gap:8px 16px;margin:0 0 16px;font-size:14px}
 .kv2 dt{color:var(--mut)}
 .kv2 dd{margin:0;color:var(--ink);font-weight:600;word-break:break-word}
@@ -369,11 +363,8 @@ select[data-dd]{display:none!important}
 .kv2 dd .ok{color:var(--ok)}
 .kv2 dd .warn{color:var(--warn)}
 
-.acard .ah{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;margin-bottom:16px}
-.acard h4{margin:22px 0 8px}
+.acard .ah{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px}
 .acard .big{margin-bottom:4px}
-/* Cuenta con la misma rejilla del Resumen: separación única y tarjetas a la misma altura */
-.acct{--g:16px;gap:var(--g);align-items:stretch;padding:0 0 40px}
 .acct .acard{display:flex;flex-direction:column;height:100%}
 .acct .acard .acctlog{margin-top:auto}
 /* Columna izquierda: conexión y avisos, uno debajo del otro. Derecha: el consumo, que es
@@ -502,9 +493,6 @@ details.tool.paso .cmd{font:12px var(--mono);color:var(--dim);white-space:pre-wr
 
 @media (prefers-reduced-motion:reduce){.run .rst .spin{animation:none}}
 
-/* confirmación */
-.cm{display:flex;flex-direction:column;gap:14px;max-width:480px}
-
 /* opciones del chat: mismo botón, texto largo alineado a la izquierda */
 .opts button,.bctl button{min-height:30px;justify-content:flex-start;text-align:left}
 
@@ -543,8 +531,7 @@ button.icon-btn:hover:not(:disabled),button.x:hover:not(:disabled){background:va
 .rl .dot{width:8px;height:8px;border-radius:99px;flex:none;margin:0}
 .rl .v{min-width:24px;font-size:16px;font-weight:700;color:var(--ink);text-align:right;font-variant-numeric:tabular-nums}
 .rk{margin:12px 0 6px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
-.rk:first-child{margin-top:0}
-.nextlist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+.rk:first-child{margin-top:0}.nextlist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;align-items:stretch}
 .rgrid .acard{display:flex;flex-direction:column;height:100%;margin:0}
 /* aire entre el título de la tarjeta y su contenido, en Resumen y en Cuenta */
 .rgrid .acard h3{margin:0 0 14px}
@@ -670,13 +657,9 @@ button:where(:not(.bare)){/* SECUNDARIO (sin clase): sin relleno en reposo. El h
   box-shadow:inset 0 0 0 1px rgba(143,162,255,.5),0 0 16px rgba(74,103,255,.35)}
 .tabs button.on,.tabs button.on:hover{background:rgba(74,103,255,.38);color:#fff;font-weight:600;
   box-shadow:inset 0 0 0 1px rgba(143,162,255,.7),0 0 18px rgba(74,103,255,.4)}
-.tabs button:hover svg,.tabs button.on svg{color:#B9C6FF}
-
-
-/* ---- pestañas de ruta (.rtab, .rtabs) ---- */
+.tabs button:hover svg,.tabs button.on svg{color:#B9C6FF}/* ---- pestañas de ruta (.rtab, .rtabs) ---- */
 /* rutas */
-.rtabs{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:20px;border-bottom:1px solid var(--line-soft)}
-.rtab{display:flex;align-items:center;gap:8px;padding:10px 6px 10px 14px;cursor:pointer;color:var(--mut);border-bottom:2px solid transparent;margin-bottom:-1px}
+.rtabs{display:flex;flex-wrap:wrap;gap:4px;align-items:stretch;margin-bottom:20px;border-bottom:1px solid var(--line-soft);min-height:44px}.rtab{display:flex;align-items:center;gap:8px;padding:0 6px 0 12px;cursor:pointer;color:var(--mut);border-bottom:2px solid transparent;margin-bottom:-1px;height:34px;border-radius:9px 9px 0 0}
 .rtab.on{color:var(--ink);font-weight:600;border-color:var(--pri)}
 .rtab small{font-weight:400;color:var(--dim)}
 .rtab .x{border:0;background:none;padding:0 6px;min-height:0;font-size:16px;color:var(--dim);line-height:1}
@@ -693,15 +676,9 @@ button:where(:not(.bare)){/* SECUNDARIO (sin clase): sin relleno en reposo. El h
 /* selector del lote en curso, junto a las pestañas de ruta */
 .lotepick{display:inline-flex;align-items:center;gap:8px;margin-left:auto;font-size:13px;color:var(--mut);white-space:nowrap}
 .lotepick select{min-height:32px;padding:4px 10px}
-/* ============ fila de rutas: una sola altura y un botón que no pesa ============ */
-.rtabs{gap:4px;align-items:stretch;min-height:44px}
 .rtabs>*{align-self:center}
-.rtab{height:34px;padding:0 6px 0 12px;border-radius:9px 9px 0 0;border-bottom:2px solid transparent;margin-bottom:-1px}
 .rtab.on{background:color-mix(in srgb,var(--pri) 10%,transparent)}
 .lotepick{align-self:center}
-
-/* lista de «Qué sigue» en el Resumen: se lee como lista, no como botonera */
-.nextlist{align-items:stretch}
 .nextlist button{width:100%;justify-content:flex-start;min-height:32px;padding:0 12px}
 
 /* lo que antes se escribía a mano en el JS; ahora solo quedan anchos calculados */
@@ -714,7 +691,6 @@ h4.sep,h5.sep{margin-top:18px}
 .pill.q{--rc:var(--warn);color:#FFD2A0}
 .chips .ap{border-color:color-mix(in srgb,var(--ok) 55%,transparent);color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}
 .chips .ap.otro{opacity:.5}
-
 
 /* ---- tarjetas de paso de la ruta (.node, .flow) ---- */
 .node{position:relative;background:var(--s2);border:1px solid var(--line);border-radius:var(--r-lg);padding:14px 16px;cursor:pointer;min-height:132px;display:flex;flex-direction:column;gap:8px;transition:border-color .18s,background .18s,transform .18s;min-width:0}
@@ -757,9 +733,8 @@ h4.sep,h5.sep{margin-top:18px}
 .node.failed .badge{color:var(--bad)}
 .node.failed .badge::before{content:"✕"}
 .node.failed .num{background:var(--bad);border-color:var(--bad);color:#2A0710}
-.node.blocked{opacity:.8}
-/* vagones conectados: serpentina con flechas */
-.flow.seq{--cols:3;--gap:48px;--lc:#6B7A9C;display:grid;grid-template-columns:repeat(var(--cols),minmax(0,1fr));column-gap:var(--gap);row-gap:var(--gap)}
+.node.blocked{opacity:.8}/* vagones conectados: serpentina con flechas */
+.flow.seq{--cols:3;--gap:48px;--lc:#6F7CA8;display:grid;grid-template-columns:repeat(var(--cols),minmax(0,1fr));column-gap:var(--gap);row-gap:var(--gap)}
 .flow.seq .node{min-height:150px}
 .flow.nofl{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
 .flow.nofl .num{display:none}
@@ -780,7 +755,6 @@ h4.sep,h5.sep{margin-top:18px}
 .flow .node.upnext .badge{background:rgba(76,141,255,.18);border-color:var(--info);color:#9EC2FF}
 .flow .node.upnext .badge::before{content:"▸"}
 .flow .node.upnext .num{background:var(--info);border-color:var(--info);color:#fff}
-.flow .node.COMPLETADO,.flow .node.approved{background:color-mix(in srgb,var(--ok) 8%,var(--s2));border-color:#1F9C70;box-shadow:none}
 .flow .node.COMPLETADO .badge,.flow .node.approved .badge{background:rgba(43,209,143,.16);border-color:var(--ok);color:#58E5AE}
 .flow .node.COMPLETADO .badge::before{content:"✓"}
 .flow .node.COMPLETADO .num{background:var(--ok);border-color:var(--ok);color:#032a20}
@@ -799,21 +773,17 @@ h4.sep,h5.sep{margin-top:18px}
 .flow .node.blocked{background:color-mix(in srgb,var(--bad) 6%,var(--s2));border:1px dashed var(--bad);opacity:1;box-shadow:none}
 .flow .node.blocked .badge::before{content:"🔒"}
 .flow .node.OMITIDO{opacity:.75;border-style:dashed}
-.flow.seq{--lc:#6F7CA8}
 .flow .node.COMPLETADO::after,.flow .node.approved::after{background:var(--ok)}
 .flow .node.toapprove::after{background:var(--info)}
 .flow .node.running::after{background:var(--cy)}
 .flow .node.upnext::after{background:var(--info)}
-/* por aprobar y en ejecución mandan sobre el estado de fondo; tintes más suaves */
-.flow .node.COMPLETADO,.flow .node.approved{background:color-mix(in srgb,var(--ok) 5%,var(--s2))}
 .flow .node.toapprove.toapprove{background:color-mix(in srgb,var(--info) 8%,var(--s2));border-color:var(--info);box-shadow:0 0 0 1px var(--info),0 6px 22px rgba(76,141,255,.3)}
 .flow .node.toapprove.toapprove .badge{background:rgba(76,141,255,.18);border-color:var(--info);color:#9EC2FF}
 .flow .node.toapprove.toapprove .num{background:var(--info);border-color:var(--info);color:#fff}
 .flow .node.running.running{background:color-mix(in srgb,var(--cy) 7%,var(--s2));border-color:var(--cy);box-shadow:0 0 0 1px var(--cy),0 6px 22px rgba(61,216,238,.25)}
 .flow .node.running.running .badge{background:rgba(61,216,238,.16);border-color:var(--cy);color:#7FE6F5}
 /* tarjetas de paso: el hover ilumina con su propio color */
-.flow .node{--sc:#8EA0E0}
-.flow .node.COMPLETADO,.flow .node.approved{--sc:var(--ok)}
+.flow .node{--sc:#8EA0E0}.flow .node.COMPLETADO,.flow .node.approved{background:color-mix(in srgb,var(--ok) 5%,var(--s2));border-color:#1F9C70;box-shadow:none;--sc:var(--ok)}
 .flow .node.toapprove{--sc:var(--info)}
 .flow .node.running{--sc:var(--cy)}
 .flow .node.DESACTUALIZADO,.flow .node.POR_REVISAR{--sc:var(--warn)}
@@ -823,8 +793,7 @@ h4.sep,h5.sep{margin-top:18px}
 /* bloqueada: punteada y neutra; solo la etiqueta es roja, con candado de línea */
 .flow .node.blocked,.flow .node.blocked:hover{background:var(--s1);border:1px dashed var(--line-hi);box-shadow:none;filter:none;cursor:not-allowed}
 .flow .node.blocked .num{background:var(--s2);border-color:var(--line-hi);color:var(--mut)}
-.flow .node.blocked .t,.flow .node.blocked .p{color:var(--mut)}
-.flow .node.blocked .badge{background:rgba(255,107,139,.14);border-color:var(--bad);color:#FF9FB3}
+.flow .node.blocked .t,.flow .node.blocked .p{color:var(--mut)}.flow .node.blocked .badge{background:rgba(255,255,255,.05);border-color:var(--line-hi);color:var(--dim)}
 .flow .node.blocked .badge::before,.lockic{content:"";display:inline-block;width:13px;height:13px;background:currentColor;-webkit-mask:var(--lock) center/contain no-repeat;mask:var(--lock) center/contain no-repeat}
 /* paso en ejecución o por aprobar: su color manda sobre el del entregable; "Parcial" es ámbar, no error */
 .flow .node.running.running{--sc:var(--cy)}
@@ -835,8 +804,6 @@ h4.sep,h5.sep{margin-top:18px}
 .flow .node.PARCIAL:hover{border-color:var(--sc);box-shadow:0 0 0 1px var(--sc),0 8px 28px color-mix(in srgb,var(--sc) 40%,transparent)}
 .node .next-tag{position:absolute;top:-10px;right:12px;color:#fff;font-size:12px;font-weight:600;padding:2px 10px;border-radius:99px}
 .node .next-tag{background:var(--pri);box-shadow:none}
-/* bloqueado es un turno que no llegó, no un error: deja de pintarse de rojo */
-.flow .node.blocked .badge{background:rgba(255,255,255,.05);border-color:var(--line-hi);color:var(--dim)}
 /* terminó con error: la última corrida de ese paso falló. Manda sobre «siguiente», que sigue siendo cierto. */
 .flow .node.failed{--sc:var(--bad);background:color-mix(in srgb,var(--bad) 8%,var(--s2));border-color:var(--bad);box-shadow:0 0 0 1px var(--bad),0 6px 22px color-mix(in srgb,var(--bad) 22%,transparent)}
 .flow .node.failed .badge{background:rgba(255,107,139,.16);border-color:var(--bad);color:#FF9FB3}
@@ -929,10 +896,7 @@ h4.sep,h5.sep{margin-top:18px}
   --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace}
 .node .miss{font-size:12px;color:var(--warn)}
 .node .chips{display:flex;flex-wrap:wrap;gap:4px}
-.node .chips span{font:10.5px var(--mono);padding:1px 7px;border-radius:6px;background:var(--s3);color:var(--mut)}
-.flow .node .miss{color:#FFBE80}
-/* ámbar solo para lo que necesita trabajo; lo que espera tu aprobación usa el azul de acción */
-.flow .node .miss{color:var(--dim)}
+.node .chips span{font:10.5px var(--mono);padding:1px 7px;border-radius:6px;background:var(--s3);color:var(--mut)}.flow .node .miss{color:var(--dim)}
 .flow .node .miss.act{color:var(--info)}
 .flow .node .miss.bad,.node .miss.bad{color:var(--bad)}
 
