@@ -98,6 +98,29 @@ function switchTab(name) {
 }
 $('#tabs').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) switchTab(b.dataset.tab); });
 
+// ---- menú lateral plegable. Plegado deja los iconos y el indicador de la pestaña activa; el
+// nombre pasa al title y al aria-label, porque al esconder el texto el botón se queda sin nombre.
+const MINI = 'ds_side_mini';
+function pintarMenu() {
+  const mini = !!S.sideMini;
+  $('.app').classList.toggle('mini', mini);
+  const tog = $('#sideTog');
+  if (tog) { tog.setAttribute('aria-expanded', String(!mini)); tog.title = mini ? 'Mostrar los nombres' : 'Esconder el menú'; }
+  $$('#tabs button').forEach((b) => {
+    const nombre = b.querySelector('.tl')?.textContent.trim() || '';
+    if (mini) { b.title = nombre; b.setAttribute('aria-label', nombre); }
+    else { b.removeAttribute('title'); b.removeAttribute('aria-label'); }
+  });
+}
+try { S.sideMini = localStorage.getItem(MINI) === '1'; } catch { /* sin memoria del navegador */ }
+$('#sideTog')?.addEventListener('click', () => {
+  S.sideMini = !S.sideMini;
+  try { localStorage.setItem(MINI, S.sideMini ? '1' : '0'); } catch { /* sin memoria del navegador */ }
+  pintarMenu();
+  layoutFlow(); // el diagrama de pasos reparte columnas por ancho: con el menú plegado caben más
+});
+pintarMenu();
+
 // ---------------------------------------------------------------- estado general
 let stateTimer = null;
 function reloadStateSoon() { clearTimeout(stateTimer); stateTimer = setTimeout(loadState, 350); }
@@ -239,6 +262,14 @@ async function loadRoutes() {
 }
 
 function renderRutas() {
+  // Si el dibujado de la ruta falla, la pantalla se queda vacía (solo el fondo) y sin pista de por
+  // qué. Mejor un aviso con el motivo: la ruta no se ha roto, solo no se pudo pintar.
+  try { pintarRutas(); } catch (e) {
+    console.error('renderRutas', e);
+    banner(`No pude dibujar la ruta: ${e && e.message ? e.message : e}. Tus rutas siguen guardadas.`, true);
+  }
+}
+function pintarRutas() {
   const st = S.state; if (!st) return;
   const open = S.routes.open.map(resolveRoute).filter(Boolean);
   $('#chooser').hidden = open.length > 0;
@@ -719,13 +750,23 @@ function openBuilder(editId = null) {
   renderBuilder();
 }
 function renderBuilder() {
+  // Repintar la ventana entera es fácil de romper: si el dibujado falla a medias, antes quedaba la
+  // ventana vacía (fondo y nada más) y el usuario no tenía ni el error. Ahora se ve qué pasó.
+  try { pintarBuilder(); } catch (e) {
+    openModal(`<button class="x" data-mclose>×</button><h3>No pude dibujar el constructor</h3>
+      <p class="muted">La ruta sigue guardada como estaba. Cuéntame este mensaje y lo arreglo.</p>
+      <pre class="err">${esc(e && e.message ? e.message : String(e))}</pre>
+      <div class="row"><button class="primary" data-mclose>Cerrar</button></div>`);
+    console.error('renderBuilder', e);
+  }
+}
+function pintarBuilder() {
   // Agregar o quitar un paso repinta la ventana entera. Sin esto, las dos columnas vuelven
   // arriba y hay que buscar otra vez dónde ibas, que con 44 skills es un viaje largo.
   const scroll = $$('#mbox .bcol').map((c) => c.scrollTop);
   const mbox = $('#mbox').scrollTop;
   const st = S.state;
   const groups = [...new Set(st.skills.map((s) => s.grupo))];
-  const usados = new Set(B.skills.map(baseId));
   const cuantas = (sk) => B.skills.filter((x) => baseId(x) === sk).length;
   const problemas = problemasRuta(B.skills);
   const hint = (id) => {
@@ -788,7 +829,7 @@ function selectorEntregables(s) {
   const candidatos = S.state.skills.filter((x) => x.paso);
   const dentro = candidatos.filter((x) => enRuta.has(x.skill));
   const fuera = candidatos.filter((x) => !enRuta.has(x.skill) && (isDone(x) || x.estado === 'DESACTUALIZADO' || x.estado === 'POR_REVISAR'));
-  const opcion = (x) => `<label class="dd-o"><input type="checkbox" data-rev="${esc(x.paso)}" ${puesto(x.paso) ? 'checked' : ''}><span class="ck"></span><span class="tx">${esc(x.nombre)}</span></label>`;
+  const opcion = (x) => `<label class="revo"><input type="checkbox" data-rev="${esc(x.paso)}" ${puesto(x.paso) ? 'checked' : ''}><span class="revck"></span><span class="revtx">${esc(x.nombre)}</span></label>`;
   if (!dentro.length && !fuera.length) return '<div class="revsel"><p class="muted sm">Todavía no hay pasos que revisar: agrega antes los que producen entregables.</p></div>';
   return `<div class="revsel">
     <p class="muted sm">Marca qué vas a revisar. Cada uno entra como su propia tarjeta, justo después del paso que revisa.</p>
@@ -839,7 +880,13 @@ $('#mbox').addEventListener('click', async (e) => {
   if (!e.target.closest('#tipSkill')) cerrarTip();
   if (!B) return;
   const rev = e.target.closest('[data-rev]');
-  if (rev) { marcarRevision(B.sel, rev.dataset.rev, rev.checked); return renderBuilder(); }
+  if (rev) {
+    marcarRevision(B.sel, rev.dataset.rev, rev.checked);
+    // En el tick siguiente: repintar aquí mismo destruye el nodo que todavía está recibiendo
+    // este clic, y el navegador se queda a medias repartiéndolo.
+    setTimeout(renderBuilder, 0);
+    return;
+  }
   const add = e.target.closest('[data-add]');
   if (add) {
     const id = add.dataset.add;
@@ -863,6 +910,7 @@ $('#mbox').addEventListener('click', async (e) => {
     const id = B.id || `mia-${uidc()}`;
     const r = { id, nombre, descripcion: `${B.skills.length} pasos, armada por ti`, skills: B.skills };
     S.routes.custom = [...S.routes.custom.filter((x) => x.id !== id), r];
+    for (const o of S.routes.open) if (o.base === id) o.skills = [...B.skills];
     if (!B.id) { const o = { id: uidc(), base: id, desde: null, nombre: '' }; S.routes.open.push(o); S.routes.current = o.id; }
     B = null; await saveRoutes(); closeModal(); switchTab('rutas'); renderRutas();
   }

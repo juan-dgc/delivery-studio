@@ -54,8 +54,15 @@ main{flex:1;min-height:0;overflow:hidden}
 /* Selector de entregables de la revisión independiente, desplegado bajo su fila. */
 .revsel{margin:2px 0 8px;padding:8px 10px;background:var(--s1);border:1px solid var(--line);border-radius:var(--r-sm)}
 .revsel p{margin:0 0 6px}.revsel .g{margin:8px 0 2px}
-.revsel .dd-o{padding:5px 2px;font-size:13px}
-.revsel .dd-o:hover{background:var(--s3);color:var(--ink)}
+.revo{display:flex;align-items:center;gap:9px;padding:5px 2px;border-radius:var(--r-sm);cursor:pointer;font-size:13px;line-height:1.3}
+.revo:hover{background:var(--s3)}
+.revo input{position:absolute;opacity:0;width:0;height:0}
+.revo .revck{flex:none;width:16px;height:16px;border:1.5px solid #7F8FC8;border-radius:5px;background:var(--s2);display:grid;place-items:center}
+.revo input:checked+.revck{background:var(--pri);border-color:#8FA2FF}
+.revo input:checked+.revck::after{content:"";width:9px;height:9px;background:#fff;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7'/%3E%3C/svg%3E") center/contain no-repeat}
+.revo input:focus-visible+.revck{outline:2px solid var(--pri);outline-offset:2px}
+.revo .revtx{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+pre.err{margin:8px 0;padding:10px;background:var(--s1);border:1px solid var(--line);border-radius:var(--r-sm);white-space:pre-wrap;word-break:break-word;font-size:12px;color:var(--warn)}
 .binfo svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 /* tooltip de información de un paso: se abre con el icono ⓘ, se cierra con Escape o un clic fuera */
 .skilltip{position:absolute;z-index:30;width:330px;max-height:340px;overflow-y:auto;background:var(--s1);border:1px solid var(--pri-t);border-radius:var(--r-md);padding:12px 14px;box-shadow:0 14px 40px rgba(0,0,0,.55);font-size:12.5px;line-height:1.45;scrollbar-width:thin;scrollbar-color:var(--pri-t) var(--s3);overscroll-behavior:contain}
@@ -253,6 +260,23 @@ select[data-dd]{display:none!important}
 .logo{width:26px;height:26px;border-radius:8px;background:var(--aurora);display:inline-block}
 .side-foot{margin-top:auto;border:1px solid var(--line-soft);background:var(--s2);border-radius:var(--r-lg);padding:11px 13px}
 .side{background:var(--s1);border-right:1px solid var(--line-soft);backdrop-filter:none}
+
+/* ---- menú lateral plegable: se queda en iconos y conserva el indicador de la pestaña activa ---- */
+.app.mini{--side:64px}
+.sidetog{flex:none;margin-left:auto;width:26px;height:26px;display:grid;place-items:center;color:var(--dim);background:transparent;border:0;border-radius:var(--r-sm);cursor:pointer;transition:background .14s,color .14s}
+.sidetog:hover{background:var(--s3);color:var(--ink)}
+.sidetog:focus-visible{outline:2px solid var(--pri);outline-offset:1px}
+.sidetog svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform .18s}
+.mini .sidetog svg{transform:rotate(180deg)}
+.mini .side{padding:18px 8px}
+.mini .brand{flex-direction:column;gap:10px;padding:2px 0}
+.mini .bname{display:none}
+.mini .sidetog{margin:0}
+.mini .tabs button{justify-content:center;gap:0;padding:10px 0}
+.mini .tabs button .tl{display:none}
+.mini .tabs button.on::before{left:-8px}
+.mini .tabs button .dot{position:absolute;top:6px;right:9px;margin:0}
+.mini .side-foot{display:none}
 
 /* ---- cabecera (.top, .auth) ---- */
 .top{height:var(--head);flex:none;display:flex;align-items:center;gap:16px;padding:0 28px}
@@ -575,6 +599,8 @@ button.icon-btn:hover:not(:disabled),button.x:hover:not(:disabled){background:va
   .brand,.side-foot{display:none}.tabs{flex-direction:row;flex:1;justify-content:space-around}.tabs button{flex-direction:column;gap:3px;font-size:12px;padding:6px 10px;min-height:44px}.tabs button.on::before{display:none}
   .mainc{order:1}.top{padding:0 16px}.tab{padding:16px}
   .next{flex-direction:column;align-items:flex-start}
+  .sidetog{display:none}.app.mini{--side:auto}.mini .side{padding:6px 8px}
+  .mini .tabs button .tl{display:block}.mini .tabs button{padding:6px 10px}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 .chip,.auth button{white-space:nowrap}
