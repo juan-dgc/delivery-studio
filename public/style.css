@@ -408,11 +408,11 @@ button.approve{--d:#03402A;--m:#0B8A5C;--n:#18B574}
 button.danger{--d:#701026;--m:#B3193F;--n:#FF3D6E}
 button.warn{--d:#9E4515;--m:#B86300;--n:#ED7818;--bd:#CC711B}
 button.sm{min-height:30px;padding:0 13px;font-size:13px}
-button:not(.bare):hover:not(:disabled){border-color:var(--n);color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.55);
+button:where(:not(.bare)):hover:not(:disabled){border-color:var(--n);color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.55);
   background:linear-gradient(100deg,var(--d) 0%,var(--n) 74%,var(--mf) 100%);
   box-shadow:0 0 0 1px var(--n),0 0 9px 1px color-mix(in srgb,var(--n) 65%,transparent)}
-button:not(.bare):active:not(:disabled){transform:translateY(1px)}
-button:not(.bare):disabled{opacity:.45;filter:grayscale(.5);box-shadow:none;cursor:not-allowed}
+button:where(:not(.bare)):active:not(:disabled){transform:translateY(1px)}
+button:where(:not(.bare)):disabled{opacity:.45;filter:grayscale(.5);box-shadow:none;cursor:not-allowed}
 button:focus-visible{outline:3px solid #FFFFFF;outline-offset:2px}
 
 /* ---- ejecución (.run, .log, .opts) ---- */
@@ -633,8 +633,11 @@ button.icon-btn:hover:not(:disabled),button.x:hover:not(:disabled){background:va
      .tabs button     menú lateral
      .bare            botones sin cromo: se definen enteros en su propia regla
                       (.sidetog la flecha del menú, .logo el icono de marca)
+
+   La exclusión va con :where() a propósito: no suma especificidad, así que el bloque base sigue
+   pesando lo mismo que cuando era «button» a secas y las clases de intención le siguen ganando.
    ================================================================== */
-button:not(.bare){/* SECUNDARIO (sin clase): sin relleno en reposo. El hover lo rellena. */
+button:where(:not(.bare)){/* SECUNDARIO (sin clase): sin relleno en reposo. El hover lo rellena. */
   --d:#1B2238;--m:#35367E;--n:#5667BF;
   --mf:color-mix(in srgb,var(--m) 77%,#090C16);
   --bd:color-mix(in srgb,var(--n) 65%,var(--s2));
