@@ -188,6 +188,66 @@ await t('Escritura por enlace simbólico que sale del proyecto pregunta', async 
   await t('Aprobación: integración se aprueba por INT-NN', () => {
     assert.equal(claveAprobacion(cfg2, root, 'integracion', 'INT-03').clave, 'integracion|INT-03');
   });
+  await t('Aprobación: la revisión se aprueba por entregable', () => {
+    const cfgR = { catalog: { skills: [{ skill: 'revision', alcance: 'entregable', concurrente: true, arg: '<paso>' }] } };
+    assert.equal(claveAprobacion(cfgR, root, 'revision', '02-user-stories').clave, 'revision|02-user-stories');
+    assert.equal(claveAprobacion(cfgR, root, 'revision', '08-db-schema').clave, 'revision|08-db-schema');
+    // sin argumento no hay "backlog" por defecto: eso es solo de los pasos por lote
+    assert.equal(claveAprobacion(cfgR, root, 'revision', '').clave, 'revision');
+  });
+  await t('Entrada de ruta compuesta: solo en skills con alcance propio', async () => {
+    const { entradaValida } = await import('../lib/state.mjs');
+    const cfgR = { catalog: { skills: [
+      { skill: 'revision', alcance: 'entregable', arg: '<paso>' },
+      { skill: 'historias', paso: '02-user-stories' },
+    ] } };
+    assert.equal(entradaValida(cfgR, 'revision'), true);
+    assert.equal(entradaValida(cfgR, 'revision:02-user-stories'), true);
+    assert.equal(entradaValida(cfgR, 'historias'), true);
+    // una skill que ya es paso del manifiesto no se repite con argumento
+    assert.equal(entradaValida(cfgR, 'historias:02-user-stories'), false);
+    assert.equal(entradaValida(cfgR, 'inventada'), false);
+    assert.equal(entradaValida(cfgR, 'revision:../../etc/passwd'), false);
+    assert.equal(entradaValida(cfgR, 'revision:' + 'x'.repeat(41)), false);
+  });
+  await t('La revisión se lanza con su entregable y en paralelo con otra', () => {
+    const cfgR = { catalog: { skills: [{ skill: 'review-deliverable', alcance: 'entregable', concurrente: true, arg: '<paso>' }] }, models: [], pluginOk: true, pluginName: 'delivery' };
+    const rmR = new RunManager({ cfg: cfgR, root, broadcast: () => {} });
+    rmR.saveApprovals = () => {}; rmR.persist = () => {}; rmR.turn = () => {};
+    const a = rmR.start({ skill: 'review-deliverable', args: '02-user-stories', title: 'Revisión' });
+    const ra = rmR.get(a.id);
+    assert.equal(ra.prompt, '/delivery:review-deliverable 02-user-stories');
+    assert.equal(ra.clave, 'review-deliverable|02-user-stories');
+    assert.equal(ra.alcance, '02-user-stories');
+    // otra revisión, otro entregable: puede correr a la vez
+    const b = rmR.start({ skill: 'review-deliverable', args: '08-db-schema', title: 'Revisión' });
+    assert.equal(rmR.get(b.id).clave, 'review-deliverable|08-db-schema');
+    assert.equal([...rmR.runs.values()].filter((r) => r.status === 'running').length, 2);
+    // la misma revisión dos veces, no
+    assert.throws(() => rmR.start({ skill: 'review-deliverable', args: '02-user-stories', title: 'Revisión' }), /trabajando sobre eso mismo/);
+    // y cada una conserva su alcance, que es lo que filtra su tarjeta
+    const vivos = rmR.activos()['review-deliverable'];
+    assert.deepEqual(vivos.map((x) => x.alcance).sort(), ['02-user-stories', '08-db-schema']);
+  });
+  await t('La revisión no cambia de etiqueta cuando responde un lote', () => {
+    // La skill pregunta en qué lote está el entregable. Esa respuesta no debe mover la etiqueta de
+    // la corrida: su alcance es el paso que revisa, y de él depende la tarjeta y la aprobación.
+    const cfgR = { catalog: { skills: [{ skill: 'review-deliverable', alcance: 'entregable', concurrente: true, arg: '<paso>' }] }, models: [], pluginOk: true, pluginName: 'delivery' };
+    const rmX = new RunManager({ cfg: cfgR, root, broadcast: () => {} });
+    rmX.saveApprovals = () => {}; rmX.persist = () => {}; rmX.turn = () => {};
+    const run = { id: 'rx', skill: 'review-deliverable', alcance: '02-user-stories', clave: 'review-deliverable|02-user-stories', events: [], files: new Set() };
+    rmX.runs.set(run.id, run);
+    rmX.alcanceDeRespuestas(run, { '¿De qué lote son las historias?': 'epica-ep-01' });
+    assert.equal(run.alcance, '02-user-stories');
+    assert.equal(run.clave, 'review-deliverable|02-user-stories');
+  });
+  await t('Una skill sin alcance propio sigue siendo una a la vez', () => {
+    const cfgU = { catalog: { skills: [{ skill: 'implementar' }] }, models: [], pluginOk: true, pluginName: 'delivery' };
+    const rmU = new RunManager({ cfg: cfgU, root, broadcast: () => {} });
+    rmU.saveApprovals = () => {}; rmU.persist = () => {}; rmU.turn = () => {};
+    rmU.start({ skill: 'implementar', args: 'sprint-01', title: 'x' });
+    assert.throws(() => rmU.start({ skill: 'implementar', args: 'sprint-02', title: 'x' }), /ya está trabajando/);
+  });
   await t('El lote se corrige con lo que la corrida hace de verdad', () => {
     const rm3 = new RunManager({ cfg: cfg2, models: [], root, broadcast: () => {} });
     rm3.saveApprovals = () => {}; rm3.persist = () => {};
@@ -233,6 +293,115 @@ await t('Escritura por enlace simbólico que sale del proyecto pregunta', async 
     assert.deepEqual(Object.keys(rm2.approvals), ['historias|sprint-02']);
   });
 }
+
+// Lógica de las rutas que vive en el cliente. app.js no se puede importar en node (toca el DOM al
+// cargar), así que se extraen sus funciones del propio archivo y se ejecutan con un S de mentira:
+// así la prueba corre el código de verdad, no una copia.
+{
+  const src = fs.readFileSync(new URL('../public/app.js', import.meta.url), 'utf8');
+  const saca = (firma) => {
+    const i = src.indexOf(firma);
+    assert.ok(i >= 0, `no encontré ${firma} en app.js`);
+    let j = src.indexOf('{', i), n = 0;
+    for (let k = j; k < src.length; k++) {
+      if (src[k] === '{') n++;
+      else if (src[k] === '}' && --n === 0) return src.slice(i, k + 1);
+    }
+    throw new Error(`no cerré ${firma}`);
+  };
+  const lineas = (re) => src.split('\n').filter((l) => re.test(l)).join('\n');
+  const fuente = [
+    lineas(/^const (baseId|argId|skillOf|argDeRun) =/),
+    'const HECHO = new Set([\'COMPLETADO\', \'OMITIDO\']);',
+    'const isDone = (s) => HECHO.has(s.estado) || s.estado === \'DESACTUALIZADO\' || s.estado === \'POR_REVISAR\';',
+    saca('function entradaRuta('),
+    'const porEntregable = (s) => !!s && !!s.porArg && /^<paso>/i.test(s.arg || \'\');',
+    saca('function problemasRuta('),
+    saca('function marcarRevision('),
+    'return { entradaRuta, problemasRuta, marcarRevision, porEntregable };',
+  ].join('\n');
+
+  const esqueleto = (extra = {}) => ({
+    state: { skills: [
+      { skill: 'generate-user-stories', nombre: 'Historias de usuario', paso: '02-user-stories', estado: 'COMPLETADO', faltan: [], listo: true },
+      { skill: 'design-db-schema', nombre: 'Esquema de base de datos', paso: '08-db-schema', estado: 'NO_INICIADO', faltan: [], listo: true },
+      { skill: 'generate-proposal', nombre: 'Propuesta comercial', paso: '01-proposal', estado: 'COMPLETADO', faltan: [], listo: true },
+      { skill: 'review-deliverable', nombre: 'Revisión independiente', estado: 'SIN_ESTADO', arg: '<paso>', faltan: [], listo: true,
+        porArg: { activas: [], fallos: [], aprobaciones: [], ...extra } },
+    ] },
+  });
+  const cargar = (S, B) => new Function('S', 'B', 'assert', fuente)(S, B, assert);
+
+  await t('Ruta: la entrada compuesta toma el nombre del entregable que revisa', () => {
+    const api = cargar(esqueleto(), null);
+    const e = api.entradaRuta('review-deliverable:02-user-stories');
+    assert.equal(e.skill, 'review-deliverable');
+    assert.equal(e.arg, '02-user-stories');
+    assert.equal(e.rid, 'review-deliverable:02-user-stories');
+    assert.equal(e.nombre, 'Revisión independiente: Historias de usuario');
+    assert.equal(e.listo, true);
+    assert.equal(e.opcional, true);
+    // una entrada simple sigue siendo la skill tal cual
+    assert.equal(api.entradaRuta('generate-user-stories').nombre, 'Historias de usuario');
+  });
+
+  await t('Ruta: la revisión se bloquea si su entregable no existe', () => {
+    const api = cargar(esqueleto(), null);
+    const e = api.entradaRuta('review-deliverable:08-db-schema');
+    assert.equal(e.listo, false);
+    assert.deepEqual(e.faltan.map((f) => f.nombre), ['Esquema de base de datos']);
+  });
+
+  await t('Ruta: cada revisión ve solo el estado de su propio entregable', () => {
+    const api = cargar(esqueleto({
+      activas: [{ runId: 'r-hist', status: 'running', alcance: '02-user-stories' }],
+      fallos: [{ runId: 'r-prop', alcance: '01-proposal', ts: 5 }],
+      aprobaciones: [{ alcance: '01-proposal', ts: 9, runId: 'r-ok' }],
+    }), null);
+    const hist = api.entradaRuta('review-deliverable:02-user-stories');
+    const prop = api.entradaRuta('review-deliverable:01-proposal');
+    assert.equal(hist.activa.runId, 'r-hist');
+    assert.equal(hist.fallo, null, 'la que corre no muestra el fallo de otra');
+    assert.equal(hist.aprobada, null);
+    assert.equal(prop.activa, null, 'la propuesta no hereda la ejecución de historias');
+    assert.equal(prop.fallo.runId, 'r-prop');
+    assert.equal(prop.aprobada.runId, 'r-ok');
+    assert.equal(prop.estado, 'COMPLETADO');
+    assert.equal(hist.estado, 'SIN_ESTADO');
+  });
+
+  await t('Ruta: la revisión se coloca justo después del paso que revisa', () => {
+    const S = esqueleto(), B = { skills: ['generate-user-stories', 'design-db-schema'] };
+    const api = cargar(S, B);
+    api.marcarRevision('review-deliverable', '02-user-stories', true);
+    assert.deepEqual(B.skills, ['generate-user-stories', 'review-deliverable:02-user-stories', 'design-db-schema']);
+    // una segunda revisión del mismo paso no se intercala entre el paso y la primera
+    api.marcarRevision('review-deliverable', '08-db-schema', true);
+    assert.deepEqual(B.skills, ['generate-user-stories', 'review-deliverable:02-user-stories', 'design-db-schema', 'review-deliverable:08-db-schema']);
+    // desmarcar la quita y no toca las demás
+    api.marcarRevision('review-deliverable', '02-user-stories', false);
+    assert.deepEqual(B.skills, ['generate-user-stories', 'design-db-schema', 'review-deliverable:08-db-schema']);
+  });
+
+  await t('Ruta: revisar algo que no está en la ruta se agrega al final', () => {
+    const S = esqueleto(), B = { skills: ['generate-user-stories'] };
+    const api = cargar(S, B);
+    api.marcarRevision('review-deliverable', '01-proposal', true);
+    assert.deepEqual(B.skills, ['generate-user-stories', 'review-deliverable:01-proposal']);
+  });
+
+  await t('Ruta: una revisión puesta antes de su paso avisa, con el paso hecho no', () => {
+    const api = cargar(esqueleto(), null);
+    // 08 no está hecho en el proyecto: la revisión exige que su paso vaya antes
+    const mal = api.problemasRuta(['review-deliverable:08-db-schema', 'design-db-schema']);
+    assert.deepEqual(mal.map((x) => x.m[0]), ['design-db-schema']);
+    const bien = api.problemasRuta(['design-db-schema', 'review-deliverable:08-db-schema']);
+    assert.deepEqual(bien, []);
+    // 02 ya está hecho en el proyecto: da igual el orden
+    assert.deepEqual(api.problemasRuta(['review-deliverable:02-user-stories']), []);
+  });
+}
+
 
 console.log(`\n${ok} pruebas pasaron`);
 fs.rmSync(root, { recursive: true, force: true });

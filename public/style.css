@@ -51,6 +51,11 @@ main{flex:1;min-height:0;overflow:hidden}
 .bs[data-i]{cursor:default}.bs small.warn{display:block;color:var(--warn)}
 .bs .bn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .bs .binfo{flex:none;min-height:22px;min-width:22px;padding:0 3px;color:var(--dim)}
+/* Selector de entregables de la revisión independiente, desplegado bajo su fila. */
+.revsel{margin:2px 0 8px;padding:8px 10px;background:var(--s1);border:1px solid var(--line);border-radius:var(--r-sm)}
+.revsel p{margin:0 0 6px}.revsel .g{margin:8px 0 2px}
+.revsel .dd-o{padding:5px 2px;font-size:13px}
+.revsel .dd-o:hover{background:var(--s3);color:var(--ink)}
 .binfo svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 /* tooltip de información de un paso: se abre con el icono ⓘ, se cierra con Escape o un clic fuera */
 .skilltip{position:absolute;z-index:30;width:330px;max-height:340px;overflow-y:auto;background:var(--s1);border:1px solid var(--pri-t);border-radius:var(--r-md);padding:12px 14px;box-shadow:0 14px 40px rgba(0,0,0,.55);font-size:12.5px;line-height:1.45;scrollbar-width:thin;scrollbar-color:var(--pri-t) var(--s3);overscroll-behavior:contain}

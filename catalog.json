@@ -334,6 +334,8 @@
   },
   {
    "skill": "review-deliverable",
+      "alcance": "entregable",
+      "concurrente": true,
    "nombre": "Revisión independiente",
    "grupo": "Utilidades",
    "requiere": [

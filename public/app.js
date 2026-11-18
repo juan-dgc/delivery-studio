@@ -162,7 +162,44 @@ const allRoutes = () => [
   ...S.state.playlists.map((p) => ({ ...p, tipo: 'predefinida' })),
   ...S.routes.custom.map((r) => ({ ...r, tipo: 'propia', secuencia: true })),
 ];
-const skillOf = (id) => S.state.skills.find((s) => s.skill === id);
+// Una entrada de ruta es «skill» o «skill:argumento». La segunda forma repite una skill en la
+// misma ruta con un argumento fijo: así la revisión independiente, una tarjeta por entregable.
+const baseId = (id) => String(id ?? '').split(':')[0];
+const argId = (id) => String(id ?? '').split(':').slice(1).join(':');
+const skillOf = (id) => S.state.skills.find((s) => s.skill === baseId(id));
+const argDeRun = (r) => String(r?.args || '').trim().split(/\s+/)[0];
+
+/**
+ * Vista de un paso tal como lo dibuja una ruta. Para una entrada simple es la skill tal cual.
+ * Para una compuesta, la misma skill con el estado, el fallo y la aprobación de *su* argumento,
+ * y bloqueada mientras el entregable que revisa no exista.
+ */
+function entradaRuta(id) {
+  const s = skillOf(id); if (!s) return null;
+  const arg = argId(id);
+  if (!arg || !s.porArg) return { ...s, rid: String(id), arg: '' };
+  const mio = (x) => (x.alcance || '') === arg;
+  const act = s.porArg.activas.filter(mio);
+  const apr = s.porArg.aprobaciones.filter(mio).sort((a, b) => (b.ts || 0) - (a.ts || 0));
+  const obj = S.state.skills.find((x) => x.paso === arg);
+  const falta = obj && !(isDone(obj) || obj.estado === 'OMITIDO')
+    ? [{ skill: obj.skill, nombre: obj.nombre, estado: obj.estado, porAprobar: !!obj.activa }] : [];
+  return {
+    ...s,
+    rid: String(id),
+    arg,
+    esRevision: true,
+    nombre: `${s.nombre}: ${obj?.nombre || arg}`,
+    activa: act.find((x) => x.status === 'running') || act[0] || null,
+    fallo: act.length ? null : s.porArg.fallos.filter(mio).sort((a, b) => b.ts - a.ts)[0] || null,
+    aprobada: apr.length ? { ts: apr[0].ts, runId: apr[0].runId, lotes: [], deEsteLote: true } : null,
+    estado: apr.length ? 'COMPLETADO' : 'SIN_ESTADO',
+    faltan: falta,
+    listo: s.listo && !falta.length,
+    opcional: true,
+    corridas: [],
+  };
+}
 const isDone = (s) => HECHO.has(s.estado) || s.estado === 'DESACTUALIZADO' || s.estado === 'POR_REVISAR';
 const pending = (s) => ['NO_INICIADO', 'DESACTUALIZADO', 'PARCIAL', 'FALLIDO'].includes(s.estado);
 
@@ -212,9 +249,9 @@ function renderRutas() {
   const cur = open.find((o) => o.id === S.routes.current);
   const corriendo = new Set(S.runs.filter((r) => r.status === 'running').map((r) => r.skill));
 
-  const doneSeg = (o) => o.skills.map(skillOf).filter((x) => x && x.estado !== 'SIN_ESTADO' && !x.opcional).every((x) => isDone(x) && !x.activa);
+  const doneSeg = (o) => o.skills.map(entradaRuta).filter((x) => x && x.estado !== 'SIN_ESTADO' && !x.opcional).every((x) => isDone(x) && !x.activa);
   $('#rtabs').innerHTML = (open.length > 1 ? '<span class="rlabel">Tramos de tu camino</span>' : '<span class="rlabel">Tu ruta</span>') + open.map((o, n) => {
-    const live = o.skills.some((id) => corriendo.has(id)), ok = doneSeg(o);
+    const live = o.skills.some((id) => corriendo.has(baseId(id))), ok = doneSeg(o);
     return `<div class="rtab ${o.id === cur.id ? 'on' : ''} ${ok ? 'ok' : ''}" data-rid="${esc(o.id)}"><span class="tn">${ok ? '✓' : n + 1}</span><span>${esc(o.nombre)}${o.desde ? ` <small>desde ${esc(skillOf(o.desde)?.nombre || o.desde)}</small>` : ''}</span>${live ? '<i class="dot"></i>' : ''}<button class="x icon-btn" data-close="${esc(o.id)}" title="Quitar este tramo" aria-label="Quitar este tramo">×</button></div>`;
   }).join('') + '<button class="ghost addroute" id="addRoute">+ Continuar con otra ruta</button>' + selectorLote();
   renderSugerencia(open, cur);
@@ -232,8 +269,9 @@ function renderRutas() {
   $('#summary').innerHTML = k.join('');
   $('#pdesc').textContent = cur.descripcion || '';
 
-  const skills = cur.skills.map(skillOf).filter(Boolean);
-  const medibles = skills.filter((s) => s.estado !== 'SIN_ESTADO');
+  const skills = cur.skills.map(entradaRuta).filter(Boolean);
+  // Las revisiones son opcionales y no tienen entregable propio: no entran en la barra de avance.
+  const medibles = skills.filter((s) => s.estado !== 'SIN_ESTADO' && !s.esRevision);
   const hechos = medibles.filter((s) => isDone(s) && !s.activa).length;
   $('.progress').hidden = !cur.secuencia || !medibles.length;
   $('#bar').style.width = medibles.length ? `${(hechos / medibles.length) * 100}%` : '0';
@@ -245,20 +283,20 @@ function renderRutas() {
   const flow = $('#flow');
   flow.className = `flow ${cur.secuencia ? 'seq' : 'nofl'}`;
   flow.innerHTML = skills.map((s, idx) => {
-    const run = corriendo.has(s.skill);
-    const apr = s.activa && !run;
+    const run = s.activa?.status === 'running';
+    const apr = s.activa?.status === 'esperando';
     const bloq = !s.listo && !apr && !run;
     const fail = !run && !apr && s.fallo;
-    const cls = ['node', run || apr ? '' : s.estado, bloq ? 'blocked' : '', next?.skill === s.skill ? 'upnext' : '', run ? 'running' : '', apr ? 'toapprove' : '', s.aprobada && isDone(s) && !s.activa ? 'approved' : '', fail ? 'failed' : ''].join(' ');
+    const cls = ['node', run || apr ? '' : s.estado, bloq ? 'blocked' : '', next?.rid === s.rid ? 'upnext' : '', run ? 'running' : '', apr ? 'toapprove' : '', s.aprobada && isDone(s) && !s.activa ? 'approved' : '', fail ? 'failed' : ''].join(' ');
     const label = run ? 'Trabajando' : apr ? 'Por aprobar' : fail ? 'Con error' : bloq ? 'Bloqueada' : s.aprobada && isDone(s) ? 'Aprobada' : ESTADO[s.estado] || s.estado;
     // Dos bloqueos distintos: uno lo resuelves tú con un clic (aprobar), el otro necesita trabajo antes.
     const porApr = s.faltan.some((f) => f.porAprobar);
     const falta = bloq && s.faltan.length ? `<div class="miss ${porApr ? 'act' : ''}">${porApr ? 'Aprueba' : 'Falta'}: ${s.faltan.map((f) => esc(f.nombre)).join(', ')}</div>` : '';
     const err = fail ? `<div class="miss bad">La última ejecución terminó con error. Ábrela para ver qué pasó.</div>` : '';
     const scopes = s.corridas.length ? `<div class="chips">${s.corridas.map((c) => `<span title="${esc(c.estado)}">${esc(c.alcance)} v${c.version}</span>`).join('')}</div>` : '';
-    const tag = next?.skill === s.skill ? 'Siguiente' : '';
+    const tag = next?.rid === s.rid ? 'Siguiente' : '';
     const lotesApr = s.aprobada?.lotes?.length ? `<div class="chips">${s.aprobada.lotes.map((l) => `<span class="ap ${S.lote && l !== S.lote ? 'otro' : ''}" title="Etapa aprobada para ${esc(l)}">✓ ${esc(l)}</span>`).join('')}</div>` : '';
-    return `<div class="${cls}" data-skill="${esc(s.skill)}" tabindex="0" role="button">
+    return `<div class="${cls}" data-skill="${esc(s.skill)}" data-rid="${esc(s.rid)}" tabindex="0" role="button">
       ${tag ? `<span class="next-tag">${tag}</span>` : ''}
       <div class="head"><span class="num" aria-hidden="true">${cur.secuencia ? idx + 1 : '•'}</span><div class="ttl"><div class="t">${cur.secuencia ? `<span class="vh">Paso ${idx + 1} de ${skills.length}: </span>` : ''}${esc(s.nombre)}</div></div></div>
       <div class="p">${esc(s.produce || '')}</div>${falta}${err}${lotesApr}${scopes}${s.skill === 'generate-context-pack' && S.state.pack?.pendientes > 0 ? `<div class="chips"><span class="pk">Tanda ${S.state.pack.tandaActual} de ${S.state.pack.tandas} · ${S.state.pack.hechos}/${S.state.pack.total} documentos</span></div>` : ''}
@@ -287,29 +325,29 @@ new ResizeObserver(() => layoutFlow()).observe($('#flow'));
 
 function renderNextAction(cur, skills, porAprobar, next, corriendo) {
   const box = $('#nextAction');
-  const run = skills.find((s) => corriendo.has(s.skill));
-  const goRun = (skill, status) => S.runs.find((r) => r.skill === skill && r.status === status)?.id || '';
+  const run = skills.find((s) => s.activa?.status === 'running');
+  const goRun = (s, status) => s.activa?.runId || S.runs.find((r) => r.skill === s.skill && r.status === status)?.id || '';
   let h = '';
   if (!cur.secuencia) { box.innerHTML = ''; return; }
-  if (run) h = `<div class="next"><div class="tx"><div class="k">En ejecución</div><div class="tt">${esc(run.nombre)} está trabajando</div><div class="ds">Puedes seguir viendo su avance o abrir otra ruta mientras tanto.</div></div><button class="primary" data-go-run="${esc(goRun(run.skill, 'running'))}">Ver ejecución</button></div>`;
-  else if (porAprobar) h = `<div class="next review"><div class="tx"><div class="k">Requiere tu aprobación</div><div class="tt">${esc(porAprobar.nombre)}</div><div class="ds">Revisa lo que generó y apruébalo para desbloquear los pasos que dependen de él.</div></div><button class="primary" data-go-run="${esc(goRun(porAprobar.skill, 'esperando'))}">Revisar y aprobar</button></div>`;
+  if (run) h = `<div class="next"><div class="tx"><div class="k">En ejecución</div><div class="tt">${esc(run.nombre)} está trabajando</div><div class="ds">Puedes seguir viendo su avance o abrir otra ruta mientras tanto.</div></div><button class="primary" data-go-run="${esc(goRun(run, 'running'))}">Ver ejecución</button></div>`;
+  else if (porAprobar) h = `<div class="next review"><div class="tx"><div class="k">Requiere tu aprobación</div><div class="tt">${esc(porAprobar.nombre)}</div><div class="ds">Revisa lo que generó y apruébalo para desbloquear los pasos que dependen de él.</div></div><button class="primary" data-go-run="${esc(goRun(porAprobar, 'esperando'))}">Revisar y aprobar</button></div>`;
   else if (skills.find((x) => x.fallo)) { const f = skills.find((x) => x.fallo); h = `<div class="next err"><div class="tx"><div class="k">Terminó con error</div><div class="tt">${esc(f.nombre)}</div><div class="ds">La última ejecución no llegó a entregar nada. Mira el error y vuelve a intentarlo.</div></div><button class="danger primary" data-go-run="${esc(f.fallo.runId)}">Ver el error</button></div>`; }
-  else if (next) h = `<div class="next"><div class="tx"><div class="k">Siguiente paso</div><div class="tt">${esc(next.nombre)}</div><div class="ds">${esc(next.produce || '')}</div></div><button class="primary" data-open-skill="${esc(next.skill)}">Ejecutar</button></div>`;
+  else if (next) h = `<div class="next"><div class="tx"><div class="k">Siguiente paso</div><div class="tt">${esc(next.nombre)}</div><div class="ds">${esc(next.produce || '')}</div></div><button class="primary" data-open-skill="${esc(next.rid)}">Ejecutar</button></div>`;
   else if (skills.length && skills.every((s) => isDone(s) || s.opcional || s.estado === 'SIN_ESTADO')) h = `<div class="next done"><div class="tx"><div class="k">Ruta al día</div><div class="tt">No quedan pasos pendientes en esta ruta</div><div class="ds">Abre otra ruta o vuelve a ejecutar un paso si cambió la información.</div></div></div>`;
   else h = `<div class="next"><div class="tx"><div class="k">Sin paso disponible</div><div class="tt">Hay pasos bloqueados</div><div class="ds">Revisa lo que les falta: aparece en cada tarjeta.</div></div></div>`;
   box.innerHTML = h;
 }
 $('#nextAction').addEventListener('click', async (e) => {
   const g = e.target.closest('[data-go-run]'); if (g && g.dataset.goRun) { await loadRuns(); switchTab('ejecucion'); return selectRun(g.dataset.goRun); }
-  const o = e.target.closest('[data-open-skill]'); if (o) openDrawer(o.dataset.openSkill);
+  const o = e.target.closest('[data-open-skill]'); if (o) openNode(o.dataset.openSkill);
 });
 /** Un paso con ejecución viva (trabajando o por aprobar) abre esa ejecución; no una segunda. Los demás abren el panel de ejecución. */
-async function openNode(skillId) {
-  const s = S.state.skills.find((x) => x.skill === skillId); if (!s) return;
+async function openNode(rid) {
+  const s = entradaRuta(rid); if (!s) return;
   if (s.activa?.runId) { await loadRuns(); switchTab('ejecucion'); return selectRun(s.activa.runId); }
-  return openDrawer(skillId);
+  return openDrawer(baseId(rid), s.arg);
 }
-$('#flow').addEventListener('keydown', (e) => { if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('node')) { e.preventDefault(); openNode(e.target.dataset.skill); } });
+$('#flow').addEventListener('keydown', (e) => { if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('node')) { e.preventDefault(); openNode(e.target.dataset.rid || e.target.dataset.skill); } });
 
 $('#rtabs').addEventListener('change', async (e) => {
   if (e.target.id !== 'loteCur') return;
@@ -324,7 +362,7 @@ $('#rtabs').addEventListener('click', async (e) => {
   const t = e.target.closest('.rtab');
   if (t) { S.routes.current = t.dataset.rid; saveRoutes(); renderRutas(); }
 });
-$('#flow').addEventListener('click', (e) => { const n = e.target.closest('.node'); if (n) openNode(n.dataset.skill); });
+$('#flow').addEventListener('click', (e) => { const n = e.target.closest('.node'); if (n) openNode(n.dataset.rid || n.dataset.skill); });
 
 function renderChooser() {
   const box = $('#chooser');
@@ -458,9 +496,9 @@ async function confirmRerun(s, argsValue) {
 }
 
 /** Los argumentos conocidos se eligen de una lista; solo lo desconocido (p. ej. el nombre del proyecto) es texto libre. */
-function argSpec(s) {
+function argSpec(s, fijo = '') {
   const a = (s.arg || '').trim(); if (!a) return null;
-  const st = S.state, lotes = st.infra.alcances || [], def = argDefault(s.skill) || (/^\[(sprint|lote)/i.test(a) ? S.lote : '');
+  const st = S.state, lotes = st.infra.alcances || [], def = fijo || argDefault(s.skill) || (/^\[(sprint|lote)/i.test(a) ? S.lote : '');
   if (/^\[sprint/i.test(a)) return { tipo: 'uno', label: 'Sprint', opts: lotes.filter((x) => /^sprint/i.test(x)).map((v) => [v, v]), def, vacio: 'Ninguno', nota: 'Aún no hay sprints registrados.' };
   if (/^\[lote/i.test(a)) return { tipo: 'uno', label: 'Lote', opts: [['backlog', 'backlog (todo)'], ...lotes.map((v) => [v, v])], def, vacio: 'Ninguno (todo el proyecto)' };
   if (/INT-NN/i.test(a)) return { tipo: 'uno', label: 'Integración', opts: (st.infra.integraciones || []).map((v) => [v, v]), def, vacio: 'Ninguna', nota: 'No hay integraciones listadas en integrations.md.' };
@@ -677,7 +715,7 @@ $('#mbox').addEventListener('scroll', (e) => {
 let B = null;
 function openBuilder(editId = null) {
   const prev = editId ? S.routes.custom.find((r) => r.id === editId) : null;
-  B = { id: prev?.id || null, nombre: prev?.nombre || '', skills: [...(prev?.skills || [])] };
+  B = { id: prev?.id || null, nombre: prev?.nombre || '', skills: [...(prev?.skills || [])], sel: null };
   renderBuilder();
 }
 function renderBuilder() {
@@ -687,18 +725,24 @@ function renderBuilder() {
   const mbox = $('#mbox').scrollTop;
   const st = S.state;
   const groups = [...new Set(st.skills.map((s) => s.grupo))];
-  const sel = new Set(B.skills);
+  const usados = new Set(B.skills.map(baseId));
+  const cuantas = (sk) => B.skills.filter((x) => baseId(x) === sk).length;
   const problemas = problemasRuta(B.skills);
   const hint = (id) => {
     const p = problemas.find((x) => x.id === id);
     return p ? `<small class="warn">Antes necesita: ${p.m.map((m) => esc(skillOf(m)?.nombre || m)).join(', ')}</small>` : '';
   };
+  const ico = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 7.5h.01"/></svg>';
+  const fila = (s) => {
+    const n = cuantas(s.skill), marca = porEntregable(s) ? (n ? `✓ ${n}` : '+') : (n ? '✓' : '+');
+    return `<div class="bs ${n ? 'used' : ''}" data-add="${esc(s.skill)}"><button type="button" class="icon-btn binfo" data-info="${esc(s.skill)}" title="Qué hace este paso" aria-expanded="false" aria-label="Qué hace ${esc(s.nombre)}">${ico}</button><span class="bn">${esc(s.nombre)}</span><b>${marca}</b></div>${B.sel === s.skill ? selectorEntregables(s) : ''}`;
+  };
   openModal(`<button class="x" data-mclose>×</button><h3>${B.id ? 'Editar ruta' : 'Armar mi ruta'}</h3>
     <label>Nombre<input id="bName" value="${esc(B.nombre)}" placeholder="Ej.: Preventa rápida"></label>
     <label>Partir de una ruta existente (opcional)<select id="bBase"><option value="">Vacía</option>${allRoutes().map((r) => `<option value="${esc(r.id)}">${esc(r.nombre)}</option>`).join('')}</select></label>
     <div class="bcols">
-      <div class="bcol"><h4>Skills disponibles</h4>${groups.map((g) => `<div class="g">${esc(g)}</div>${st.skills.filter((s) => s.grupo === g).map((s) => `<div class="bs ${sel.has(s.skill) ? 'used' : ''}" data-add="${esc(s.skill)}"><button type="button" class="icon-btn binfo" data-info="${esc(s.skill)}" title="Qué hace este paso" aria-expanded="false" aria-label="Qué hace ${esc(s.nombre)}"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 7.5h.01"/></svg></button><span class="bn">${esc(s.nombre)}</span><b>${sel.has(s.skill) ? '✓' : '+'}</b></div>`).join('')}`).join('')}</div>
-      <div class="bcol"><h4>Mi ruta (${B.skills.length})</h4>${B.skills.length ? B.skills.map((id, i) => `<div class="bs" data-i="${i}"><span>${i + 1}. ${esc(skillOf(id)?.nombre || id)}${hint(id)}</span><span class="bctl"><button class="icon-btn" data-up title="Subir" aria-label="Subir">↑</button><button class="icon-btn" data-down title="Bajar" aria-label="Bajar">↓</button><button class="icon-btn" data-rm title="Quitar" aria-label="Quitar">✕</button></span></div>`).join('') : '<p class="muted">Agrega skills con el botón +.</p>'}</div>
+      <div class="bcol"><h4>Skills disponibles</h4>${groups.map((g) => `<div class="g">${esc(g)}</div>${st.skills.filter((s) => s.grupo === g).map(fila).join('')}`).join('')}</div>
+      <div class="bcol"><h4>Mi ruta (${B.skills.length})</h4>${B.skills.length ? B.skills.map((id, i) => `<div class="bs" data-i="${i}"><span>${i + 1}. ${esc(entradaRuta(id)?.nombre || id)}${hint(id)}</span><span class="bctl"><button class="icon-btn" data-up title="Subir" aria-label="Subir">↑</button><button class="icon-btn" data-down title="Bajar" aria-label="Bajar">↓</button><button class="icon-btn" data-rm title="Quitar" aria-label="Quitar">✕</button></span></div>`).join('') : '<p class="muted">Agrega skills con el botón +.</p>'}</div>
     </div>
     <div class="row"><button class="primary" id="bSave" ${bMotivos(problemas).length ? 'disabled' : ''}>Guardar y abrir</button>${problemas.length ? '<button class="warn primary" id="bFix">Agregar lo que falta</button>' : ''}<span class="muted" id="bMsg">${esc(bMotivos(problemas).join(' '))}</span></div>`);
   $$('#mbox .bcol').forEach((c, i) => { if (scroll[i] != null) c.scrollTop = scroll[i]; });
@@ -712,14 +756,61 @@ function bMotivos(problemas) {
   if (problemas.length) m.push(`${problemas.length === 1 ? 'Un paso tiene' : problemas.length + ' pasos tienen'} dependencias sin resolver: agrégalas antes de ese paso o quítalo.`);
   return m;
 }
+/** ¿La skill se elige por entregable? (alcance propio del catálogo y argumento de tipo paso). */
+const porEntregable = (s) => !!s && !!s.porArg && /^<paso>/i.test(s.arg || '');
+
 /** Dependencias de un paso (según el estado real del proyecto) que no están hechas ni van antes en la ruta. */
 function problemasRuta(lista) {
   const out = [];
   lista.forEach((id, i) => {
-    const m = (skillOf(id)?.faltan || []).map((f) => f.skill).filter((d) => d !== id && !lista.slice(0, i).includes(d));
-    if (m.length) out.push({ id, i, m });
+    const antes = lista.slice(0, i).map(baseId);
+    const m = (skillOf(id)?.faltan || []).map((f) => f.skill);
+    const arg = argId(id);
+    if (arg) {
+      // La revisión solo necesita que el entregable exista: o ya está en el proyecto, o su paso va antes.
+      const obj = S.state.skills.find((x) => x.paso === arg);
+      if (obj && !(isDone(obj) || obj.estado === 'OMITIDO')) m.push(obj.skill);
+    }
+    const falta = m.filter((d) => d !== baseId(id) && !antes.includes(d));
+    if (falta.length) out.push({ id, i, m: [...new Set(falta)] });
   });
   return out;
+}
+
+/**
+ * Selector de entregables de una skill que se elige por entregable. Ofrece primero los pasos que
+ * ya están en la ruta, y después los que el proyecto ya ejecutó aunque esta ruta no los incluya:
+ * una revisión se puede querer sobre algo producido en otra ruta.
+ */
+function selectorEntregables(s) {
+  const enRuta = new Set(B.skills.map(baseId));
+  const puesto = (paso) => B.skills.includes(`${s.skill}:${paso}`);
+  const candidatos = S.state.skills.filter((x) => x.paso);
+  const dentro = candidatos.filter((x) => enRuta.has(x.skill));
+  const fuera = candidatos.filter((x) => !enRuta.has(x.skill) && (isDone(x) || x.estado === 'DESACTUALIZADO' || x.estado === 'POR_REVISAR'));
+  const opcion = (x) => `<label class="dd-o"><input type="checkbox" data-rev="${esc(x.paso)}" ${puesto(x.paso) ? 'checked' : ''}><span class="ck"></span><span class="tx">${esc(x.nombre)}</span></label>`;
+  if (!dentro.length && !fuera.length) return '<div class="revsel"><p class="muted sm">Todavía no hay pasos que revisar: agrega antes los que producen entregables.</p></div>';
+  return `<div class="revsel">
+    <p class="muted sm">Marca qué vas a revisar. Cada uno entra como su propia tarjeta, justo después del paso que revisa.</p>
+    ${dentro.length ? `<div class="g">Pasos de esta ruta</div>${dentro.map(opcion).join('')}` : ''}
+    ${fuera.length ? `<div class="g">Ya ejecutados en el proyecto</div>${fuera.map(opcion).join('')}` : ''}
+  </div>`;
+}
+
+/** Agrega o quita la revisión de un entregable, colocándola justo después del paso que revisa. */
+function marcarRevision(skill, paso, on) {
+  const id = `${skill}:${paso}`;
+  B.skills = B.skills.filter((x) => x !== id);
+  if (!on) return;
+  const dueno = S.state.skills.find((x) => x.paso === paso)?.skill;
+  const i = dueno ? B.skills.findIndex((x) => baseId(x) === dueno) : -1;
+  if (i < 0) B.skills.push(id);
+  else {
+    // detrás del paso y de las revisiones que ya cuelguen de él, para no intercalarlas
+    let j = i + 1;
+    while (j < B.skills.length && argId(B.skills[j]) && baseId(B.skills[j]) === skill) j++;
+    B.skills.splice(j, 0, id);
+  }
 }
 /** Inserta, antes de cada paso, las dependencias que le faltan (o mueve antes las que estaban después). */
 function completarRuta() {
@@ -747,8 +838,15 @@ $('#mbox').addEventListener('click', async (e) => {
   if (inf) return toggleTip(inf);
   if (!e.target.closest('#tipSkill')) cerrarTip();
   if (!B) return;
+  const rev = e.target.closest('[data-rev]');
+  if (rev) { marcarRevision(B.sel, rev.dataset.rev, rev.checked); return renderBuilder(); }
   const add = e.target.closest('[data-add]');
-  if (add) { const id = add.dataset.add; B.skills = B.skills.includes(id) ? B.skills.filter((x) => x !== id) : [...B.skills, id]; return renderBuilder(); }
+  if (add) {
+    const id = add.dataset.add;
+    if (porEntregable(skillOf(id))) { B.sel = B.sel === id ? null : id; return renderBuilder(); }
+    B.skills = B.skills.includes(id) ? B.skills.filter((x) => x !== id) : [...B.skills, id];
+    return renderBuilder();
+  }
   const row = e.target.closest('.bs[data-i]');
   if (row) {
     const i = Number(row.dataset.i);
@@ -771,21 +869,26 @@ $('#mbox').addEventListener('click', async (e) => {
 });
 
 // ---------------------------------------------------------------- panel de ejecución de una skill
-async function openDrawer(skillId) {
+async function openDrawer(skillId, argFijo = '') {
   S.focoDrawer = document.activeElement;
   if (!S.tree?.length) await loadTree();
-  const st = S.state, s = st.skills.find((x) => x.skill === skillId); if (!s) return;
+  const st = S.state, s = st.skills.find((x) => x.skill === baseId(skillId)); if (!s) return;
+  // Una skill con alcance propio corre varias veces a la vez, una por argumento: lo que bloquea
+  // el botón es que ya haya una ejecución sobre *este* entregable, no sobre la skill en general.
+  const ocupada = S.runs.some((r) => r.status === 'running' && r.skill === s.skill && (!s.porArg || argDeRun(r) === argFijo));
+  const entrada = argFijo ? entradaRuta(`${s.skill}:${argFijo}`) : null;
   const sugerido = st.models.find((m) => m.tier === s.tier)?.id || st.defaultModel;
   const alcances = ['backlog', ...st.infra.alcances];
-  const faltan = s.faltan.length
-    ? `<ul class="req">${s.faltan.map((f) => `<li><span class="n">✗</span> ${esc(f.nombre)} <span class="muted">(${f.porAprobar ? 'falta aprobar la etapa' : esc(ESTADO[f.estado] || f.estado)})</span></li>`).join('')}</ul>`
+  const req = (entrada || s).faltan;
+  const faltan = req.length
+    ? `<ul class="req">${req.map((f) => `<li><span class="n">✗</span> ${esc(f.nombre)} <span class="muted">(${f.porAprobar ? 'falta aprobar la etapa' : esc(ESTADO[f.estado] || f.estado)})</span></li>`).join('')}</ul>`
     : '<p class="muted">Requisitos cumplidos.</p>';
   const corridas = s.corridas.length
     ? `<div class="dl">${s.corridas.map((c) => `<a data-open="${esc(c.carpeta)}">Ver ${esc(c.alcance)} v${c.version} (${esc(ESTADO[c.estado] || c.estado)})</a>`).join('')}</div>` : '';
   $('#dBody').innerHTML = `
-    <h2>${esc(s.nombre)}</h2>
+    <h2>${esc(entrada?.nombre || s.nombre)}</h2>
     <div class="kv">
-      <b>Estado</b><span>${esc(ESTADO[s.estado] || s.estado)}${s.detalle ? ` <span class="muted">· ${esc(s.detalle)}</span>` : ''}</span>
+      <b>Estado</b><span>${esc(ESTADO[(entrada || s).estado] || (entrada || s).estado)}${s.detalle ? ` <span class="muted">· ${esc(s.detalle)}</span>` : ''}</span>
       <b>Necesita</b><span>${esc(s.insumo || 'Nada previo')}</span>
       <b>Entrega</b><span>${esc(s.produce || '')}</span>
       ${s.aprobada?.lotes?.length ? `<b>Aprobada para</b><span>${s.aprobada.lotes.map(esc).join(', ')}</span>` : ''}
@@ -793,16 +896,16 @@ async function openDrawer(skillId) {
     </div>
     <h4>Pasos previos</h4>${faltan}${corridas}
     ${s.skill === 'generate-context-pack' && st.pack?.pendientes > 0 ? `<p class="packnote"><b>Hay un plan por tandas a medias:</b> ${st.pack.hechos} de ${st.pack.total} documentos escritos, sigue la tanda ${st.pack.tandaActual} de ${st.pack.tandas}. Ejecutar continúa donde quedó, pero en una conversación nueva que no recuerda lo escrito. Si aún tienes abierta la conversación anterior en Ejecución, es mejor seguir allí.</p>` : ''}
-    ${argHtml(argSpec(s))}
+    ${argHtml(argSpec(s, argFijo))}
     <label>Instrucciones adicionales (opcional)<textarea id="dInstr" rows="3" placeholder="Ej.: enfócate en el módulo de pagos"></textarea></label>
     <label>Modelo<select id="dModel">${st.models.map((m) => `<option value="${esc(m.id)}" ${m.id === sugerido ? 'selected' : ''}>${esc(m.label)}${m.id === sugerido ? ' (sugerido)' : ''}</option>`).join('')}</select></label>
     <label>Permisos<select id="dAppr">
       <option value="auto" ${s.efectosReales ? '' : 'selected'}>Automático: pregunta solo lo riesgoso</option>
       <option value="preguntar" ${s.efectosReales ? 'selected' : ''}>Preguntar antes de cada comando</option>
     </select></label>
-    ${s.listo ? '' : `<p class="lockmsg"><span class="lockic"></span>Este paso está bloqueado: completa y aprueba los pasos previos para poder ejecutarlo.</p>`}
+    ${(entrada || s).listo ? '' : `<p class="lockmsg"><span class="lockic"></span>Este paso está bloqueado: completa y aprueba los pasos previos para poder ejecutarlo.</p>`}
     ${s.navegador ? `<label class="check" title="La exploración va más rápida sin ventana y no te quita el foco. La primera vez, si hace falta iniciar sesión, la skill abre la ventana igualmente."><input type="checkbox" id="dVer"> Ver el navegador mientras explora</label>` : ''}
-    <div class="row"><button class="primary" id="dRun" ${!S.auth?.loggedIn || !s.listo || S.runs.some((r) => r.status === 'running' && r.skill === s.skill) ? 'disabled' : ''} ${!S.auth?.loggedIn ? 'title="Primero inicia sesión con tu cuenta de Claude"' : ''}>${isDone(s) && !s.activa ? 'Repetir paso' : 'Ejecutar'}</button>${s.opcional && s.paso ? `<button id="dSkip" class="ghost">${s.estado === 'OMITIDO' ? 'Reactivar este paso' : 'Omitir este paso'}</button>` : ''}<span id="dMsg" class="muted">${!S.auth?.loggedIn ? '<span class="nosesion">Sin sesión de Claude: inicia sesión arriba a la derecha.</span>' : ''}</span></div>`;
+    <div class="row"><button class="primary" id="dRun" ${!S.auth?.loggedIn || !(entrada || s).listo || ocupada ? 'disabled' : ''} ${!S.auth?.loggedIn ? 'title="Primero inicia sesión con tu cuenta de Claude"' : ''}>${isDone(entrada || s) && !(entrada || s).activa ? 'Repetir paso' : 'Ejecutar'}</button>${s.opcional && s.paso ? `<button id="dSkip" class="ghost">${s.estado === 'OMITIDO' ? 'Reactivar este paso' : 'Omitir este paso'}</button>` : ''}<span id="dMsg" class="muted">${!S.auth?.loggedIn ? '<span class="nosesion">Sin sesión de Claude: inicia sesión arriba a la derecha.</span>' : ''}</span></div>`;
   $('#drawer').hidden = false;
   ($('#dBody').querySelector(FOCO) || $('#dClose')).focus?.();
   $$('#dBody [data-open]').forEach((a) => a.addEventListener('click', () => { cerrarDrawer(); openFolder(a.dataset.open); }));
@@ -818,7 +921,13 @@ async function openDrawer(skillId) {
     catch (e) { $('#dMsg').textContent = e.message; }
   });
   $('#dRun').addEventListener('click', async () => {
-    const args = argValue();
+    let args = argValue();
+    // Si lo que se revisa es un entregable por lote, se le pasa el lote abierto como segundo
+    // argumento (la skill lo acepta) para que no tenga que preguntarlo dentro de la conversación.
+    if (porEntregable(s) && args && !/\s/.test(args)) {
+      const obj = st.skills.find((x) => x.paso === args);
+      if (obj?.alcance === 'lote' && S.lote) args = `${args} ${S.lote}`;
+    }
     const rr = await confirmRerun(s, args); if (!rr.ok) return;
     $('#dMsg').textContent = 'Iniciando…';
     try {
@@ -846,7 +955,7 @@ async function loadRuns() {
 function skillsRutaAbierta() {
   const abiertas = (S.routes?.open || []).map(resolveRoute).filter(Boolean);
   const cur = abiertas.find((x) => x.id === S.routes?.current);
-  return cur && cur.skills.length ? new Set(cur.skills) : null;
+  return cur && cur.skills.length ? new Set(cur.skills.map(baseId)) : null;
 }
 
 /**

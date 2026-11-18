@@ -6,7 +6,7 @@ import { spawn } from 'node:child_process';
 import { loadConfig, STUDIO_DIR } from './lib/config.mjs';
 import { authStatus, startLogin, invalidarAuth } from './lib/auth.mjs';
 import { findPython, runPy, readManifest } from './lib/py.mjs';
-import { buildState, packPlan, invalidarStatus, claveAprobacion } from './lib/state.mjs';
+import { buildState, packPlan, invalidarStatus, claveAprobacion, entradaValida, revisionSinEntregable } from './lib/state.mjs';
 import { RunManager } from './lib/runs.mjs';
 import { Usage } from './lib/usage.mjs';
 import { safeRel, tree, render, uniqueName, inside } from './lib/files.mjs';
@@ -122,11 +122,11 @@ async function route(req, res, url) {
     }
     if (m === 'POST') {
       const b = await body(req, 200_000);
-      const known = new Set(cfg.catalog.skills.map((x) => x.skill));
+      const okId = (x) => entradaValida(cfg, x);
       const str = (v, n) => String(v ?? '').slice(0, n);
-      const clean = (r) => ({ id: str(r.id, 60), nombre: str(r.nombre, 80), descripcion: str(r.descripcion, 300), skills: (Array.isArray(r.skills) ? r.skills : []).filter((x) => known.has(x)).slice(0, 60) });
+      const clean = (r) => ({ id: str(r.id, 60), nombre: str(r.nombre, 80), descripcion: str(r.descripcion, 300), skills: (Array.isArray(r.skills) ? r.skills : []).filter(okId).slice(0, 60) });
       const custom = (Array.isArray(b.custom) ? b.custom : []).slice(0, 50).map(clean).filter((r) => r.id && r.skills.length);
-      const open = (Array.isArray(b.open) ? b.open : []).slice(0, 20).map((o) => ({ id: str(o.id, 60), base: str(o.base, 60), desde: known.has(o.desde) ? o.desde : null, nombre: str(o.nombre, 80), skills: (Array.isArray(o.skills) ? o.skills : []).filter((x) => known.has(x)).slice(0, 60), creada: str(o.creada, 30) })).filter((o) => o.id && o.base);
+      const open = (Array.isArray(b.open) ? b.open : []).slice(0, 20).map((o) => ({ id: str(o.id, 60), base: str(o.base, 60), desde: okId(o.desde) ? o.desde : null, nombre: str(o.nombre, 80), skills: (Array.isArray(o.skills) ? o.skills : []).filter(okId).slice(0, 60), creada: str(o.creada, 30) })).filter((o) => o.id && o.base);
       const out = { custom, open, current: open.some((o) => o.id === b.current) ? b.current : open[0]?.id || null, ignorarSugerencia: str(b.ignorarSugerencia, 80) };
       fs.mkdirSync(path.dirname(ROUTES_FILE), { recursive: true });
       fs.writeFileSync(ROUTES_FILE, JSON.stringify(out, null, 2));
@@ -218,6 +218,11 @@ async function route(req, res, url) {
       const st = await buildState(cfg, ROOT, runs, claveAprobacion(cfg, ROOT, b.skill, b.args).alcance || '');
       const s = st.skills.find((x) => x.skill === b.skill);
       if (s && !s.listo) return json(res, 409, { error: 'Faltan pasos previos.', faltan: s.faltan });
+      // La revisión independiente se puede poner en cualquier punto de la ruta; su único requisito
+      // es que el entregable exista. Se comprueba aquí y no solo en la pantalla, porque el argumento
+      // lo elige el usuario al ejecutar y puede no ser el de la tarjeta desde la que entró.
+      const falta = revisionSinEntregable(st, sk, b.args);
+      if (falta) return json(res, 409, { error: falta.error, faltan: falta.faltan });
     }
     if (b.reset) {
       // la skill y todas las que dependen de ella (directa o indirectamente) vuelven a quedar sin aprobar
@@ -339,6 +344,7 @@ async function route(req, res, url) {
 
   return text(res, 404, 'No encontrado');
 }
+
 
 const server = http.createServer(async (req, res) => {
   try {
