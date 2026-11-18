@@ -257,7 +257,8 @@ select[data-dd]{display:none!important}
 /* ---- barra lateral (.side) ---- */
 .side{display:flex;flex-direction:column;padding:18px 14px;gap:18px;min-height:0}
 .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;padding:2px 8px}
-.logo{width:26px;height:26px;border-radius:8px;background:var(--aurora);display:inline-block}
+.logo{width:26px;height:26px;border-radius:8px;background:var(--aurora);flex:none;display:grid;place-items:center}
+.logo svg{width:15px;height:15px;fill:none;stroke:#fff;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 .side-foot{margin-top:auto;border:1px solid var(--line-soft);background:var(--s2);border-radius:var(--r-lg);padding:11px 13px}
 .side{background:var(--s1);border-right:1px solid var(--line-soft);backdrop-filter:none}
 
@@ -638,9 +639,9 @@ button{/* SECUNDARIO (sin clase): sin relleno en reposo. El hover lo rellena. */
    relleno plano del mismo azul (nada de degradado), aro fino, halo y el icono en el mismo tono. */
 .sidetog{min-height:0;padding:0;width:26px;height:26px;gap:0;border-radius:var(--r-md);
   background:none;border:0;box-shadow:none;color:var(--dim);cursor:pointer}
-.sidetog:hover,.sidetog:focus-visible{outline:0;border:0;color:#fff;background:rgba(74,103,255,.26);
+.sidetog:hover:not(:disabled){border:0;color:#fff;text-shadow:none;background:rgba(74,103,255,.26);
   box-shadow:inset 0 0 0 1px rgba(143,162,255,.5),0 0 16px rgba(74,103,255,.35)}
-.sidetog:hover svg,.sidetog:focus-visible svg{color:#B9C6FF}
+.sidetog:hover svg{color:#B9C6FF}
 /* excepción: menú lateral. Plano, sin degradado. */
 .tabs button{justify-content:flex-start;min-height:0;gap:11px;padding:10px 12px;
   background:transparent;border:0;box-shadow:none;text-shadow:none;
