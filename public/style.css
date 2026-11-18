@@ -159,7 +159,7 @@ input,select,textarea{border-radius:var(--r-md);padding:8px 11px;width:100%;back
 /* lista de ejecuciones: separadas, con icono y etiqueta de estado */
 .runs{display:flex;flex-direction:column;gap:10px;padding:10px}
 
-.warnic{width:30px;height:30px;flex:none;fill:none;stroke:var(--warn);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 8px rgba(255,160,64,.5))}
+.warnic{width:30px;height:30px;flex:none;fill:none;stroke:var(--warn);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 8px color-mix(in srgb,var(--warn) 50%,transparent))}
 
 /* argumentos como listas de selección */
 .field{display:block;margin:12px 0}.lbl{display:block;font-size:13px;color:var(--mut);margin-bottom:6px}
@@ -180,8 +180,8 @@ select[data-dd]{display:none!important}
 #mbox .row button{white-space:nowrap}
 #bMsg{flex:1 1 100%;order:3;font-size:13px}
 
-.packnote{margin:10px 0;padding:10px 12px;background:rgba(255,160,64,.09);border:1px solid color-mix(in srgb,var(--warn) 60%,var(--line));border-radius:var(--r-md);font-size:13px;line-height:1.5;color:var(--ink)}
-.packnote b{color:#FFC48A}
+.packnote{margin:10px 0;padding:10px 12px;background:color-mix(in srgb,var(--warn) 9%,transparent);border:1px solid color-mix(in srgb,var(--warn) 60%,var(--line));border-radius:var(--r-md);font-size:13px;line-height:1.5;color:var(--ink)}
+.packnote b{color:color-mix(in srgb,var(--warn) 55%,#fff)}
 
 [hidden]{display:none!important}
 
@@ -695,7 +695,7 @@ h4.sep,h5.sep{margin-top:18px}
 /* ---- etiquetas sueltas ---- */
 .res .files a{display:block;color:var(--pri-t);cursor:pointer;font-size:13px;overflow-wrap:anywhere}
 .pill{display:inline-flex;padding:1px 9px;border-radius:99px;border:1px solid color-mix(in srgb,var(--rc,#8EA0E0) 60%,transparent);background:color-mix(in srgb,var(--rc,#8EA0E0) 15%,transparent);color:#fff;font-weight:600}
-.pill.q{--rc:var(--warn);color:#FFD2A0}
+.pill.q{--rc:var(--warn);color:color-mix(in srgb,var(--warn) 55%,#fff)}
 .chips .ap{border-color:color-mix(in srgb,var(--ok) 55%,transparent);color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}
 .chips .ap.otro{opacity:.5}
 
@@ -773,9 +773,9 @@ h4.sep,h5.sep{margin-top:18px}
 .flow .node.running .badge{background:rgba(61,216,238,.16);border-color:var(--cy);color:#7FE6F5}
 .flow .node.running .badge::before{content:"●"}
 .flow .node.DESACTUALIZADO,.flow .node.POR_REVISAR{background:color-mix(in srgb,var(--warn) 8%,var(--s2));border-color:var(--warn);box-shadow:none}
-.flow .node.DESACTUALIZADO .badge,.flow .node.POR_REVISAR .badge{background:rgba(255,160,64,.16);border-color:var(--warn);color:#FFBE80}
+.flow .node.DESACTUALIZADO .badge,.flow .node.POR_REVISAR .badge{background:color-mix(in srgb,var(--warn) 16%,transparent);border-color:var(--warn);color:color-mix(in srgb,var(--warn) 55%,#fff)}
 .flow .node.PARCIAL,.flow .node.FALLIDO{background:color-mix(in srgb,var(--bad) 8%,var(--s2));border-color:var(--bad);box-shadow:none}
-.flow .node.PARCIAL .badge,.flow .node.FALLIDO .badge{background:rgba(255,61,110,.16);border-color:var(--bad);color:#FF9FB3}
+.flow .node.PARCIAL .badge,.flow .node.FALLIDO .badge{background:rgba(255,61,110,.16);border-color:var(--bad);color:color-mix(in srgb,var(--bad) 55%,#fff)}
 .flow .node.PARCIAL .badge::before,.flow .node.FALLIDO .badge::before{content:"✕"}
 .flow .node.blocked{background:color-mix(in srgb,var(--bad) 6%,var(--s2));border:1px dashed var(--bad);opacity:1;box-shadow:none}
 .flow .node.blocked .badge::before{content:"🔒"}
@@ -806,14 +806,14 @@ h4.sep,h5.sep{margin-top:18px}
 .flow .node.running.running{--sc:var(--cy)}
 .flow .node.toapprove.toapprove{--sc:var(--info)}
 .flow .node.PARCIAL{--sc:var(--warn);background:color-mix(in srgb,var(--warn) 8%,var(--s2));border-color:var(--warn);box-shadow:none}
-.flow .node.PARCIAL .badge{background:rgba(255,160,64,.16);border-color:var(--warn);color:#FFC48A}
+.flow .node.PARCIAL .badge{background:color-mix(in srgb,var(--warn) 16%,transparent);border-color:var(--warn);color:color-mix(in srgb,var(--warn) 55%,#fff)}
 .flow .node.PARCIAL .badge::before{content:"◐"}
 .flow .node.PARCIAL:hover{border-color:var(--sc);box-shadow:0 0 0 1px var(--sc),0 8px 28px color-mix(in srgb,var(--sc) 40%,transparent)}
 .node .next-tag{position:absolute;top:-10px;right:12px;color:#fff;font-size:12px;font-weight:600;padding:2px 10px;border-radius:99px}
 .node .next-tag{background:var(--pri);box-shadow:none}
 /* terminó con error: la última corrida de ese paso falló. Manda sobre «siguiente», que sigue siendo cierto. */
 .flow .node.failed{--sc:var(--bad);background:color-mix(in srgb,var(--bad) 8%,var(--s2));border-color:var(--bad);box-shadow:0 0 0 1px var(--bad),0 6px 22px color-mix(in srgb,var(--bad) 22%,transparent)}
-.flow .node.failed .badge{background:rgba(255,61,110,.16);border-color:var(--bad);color:#FF9FB3}
+.flow .node.failed .badge{background:rgba(255,61,110,.16);border-color:var(--bad);color:color-mix(in srgb,var(--bad) 55%,#fff)}
 .flow .node.failed .badge::before{content:"✕"}
 .flow .node.failed .num{background:var(--bad);border-color:var(--bad);color:#2A0710}
 .flow .node.failed::after{background:var(--bad)}
@@ -881,7 +881,7 @@ h4.sep,h5.sep{margin-top:18px}
   --ok:#2BD18F;
   --info:#4C8DFF;
   --cy:#3DD8EE;
-  --warn:#FFA040;
+  --warn:#ED7818;
   --bad:#FF3D6E;
   --accent:#B07CFF;
   --card:var(--s2);
@@ -908,7 +908,7 @@ h4.sep,h5.sep{margin-top:18px}
 .flow .node .miss.bad,.node .miss.bad{color:var(--bad)}
 
 /* paquete de contexto por tandas */
-.chip.pk,.chips .pk{background:rgba(255,160,64,.14);border:1px solid var(--warn);color:#FFC48A;border-radius:99px;padding:2px 10px;font-size:12px;font-weight:600}
+.chip.pk,.chips .pk{background:color-mix(in srgb,var(--warn) 14%,transparent);border:1px solid var(--warn);color:color-mix(in srgb,var(--warn) 55%,#fff);border-radius:99px;padding:2px 10px;font-size:12px;font-weight:600}
 .files h5.sep{margin-top:8px}
 
 .normal{font-weight:400}
