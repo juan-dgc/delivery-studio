@@ -233,11 +233,14 @@ select[data-dd]{display:none!important}
 .rlines{display:flex;flex-direction:column;gap:2px;flex:1}
 
 /* ---- contadores (.kpi) ---- */
-.kpi{background:var(--s2);border:1px solid var(--line);border-radius:var(--r-lg);padding:14px 16px}
+.kpi{background:var(--s2);border:1px solid var(--line);border-radius:var(--r-lg);padding:14px 16px;
+  min-width:0;overflow-wrap:anywhere}
 .kpi .l{font-size:12px;color:var(--mut);font-weight:500}
 .kpi .v{font-size:26px;font-weight:650;line-height:1.2;margin-top:2px}
 .kpi .v.sm{font-size:15px;line-height:1.5;margin-top:6px}
 .kpi .s{font-size:12px;color:var(--dim);margin-top:2px}
+.dchips{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.dchips span{font:11px/1.5 var(--mono);padding:1px 7px;border-radius:6px;background:var(--s3);color:var(--warn);max-width:100%;overflow-wrap:anywhere}
 /* indicadores neutros */
 .kpi{border-top:1px solid var(--line)}
 .kpi .v{background:none;color:var(--ink);-webkit-background-clip:border-box}
@@ -264,8 +267,6 @@ select[data-dd]{display:none!important}
 
 /* ---- menú lateral plegable: se queda en iconos y conserva el indicador de la pestaña activa ---- */
 .app.mini{--side:64px}
-.sidetog{flex:none;margin-left:auto}
-.sidetog svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform .18s,filter .16s}
 .mini .sidetog svg{transform:rotate(180deg)}
 .mini .side{padding:18px 8px}
 .mini .brand{flex-direction:column;gap:10px;padding:2px 0}
@@ -398,11 +399,11 @@ button.approve{--d:#03402A;--m:#0B8A5C;--n:#18B574}
 button.danger{--d:#701026;--m:#B3193F;--n:#FF3D6E}
 button.warn{--d:#9E4515;--m:#B86300;--n:#ED7818;--bd:#CC711B}
 button.sm{min-height:30px;padding:0 13px;font-size:13px}
-button:hover:not(:disabled){border-color:var(--n);color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.55);
+button:not(.sidetog):hover:not(:disabled){border-color:var(--n);color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.55);
   background:linear-gradient(100deg,var(--d) 0%,var(--n) 74%,var(--mf) 100%);
   box-shadow:0 0 0 1px var(--n),0 0 9px 1px color-mix(in srgb,var(--n) 65%,transparent)}
-button:active:not(:disabled){transform:translateY(1px)}
-button:disabled{opacity:.45;filter:grayscale(.5);box-shadow:none;cursor:not-allowed}
+button:not(.sidetog):active:not(:disabled){transform:translateY(1px)}
+button:not(.sidetog):disabled{opacity:.45;filter:grayscale(.5);box-shadow:none;cursor:not-allowed}
 button:focus-visible{outline:3px solid #FFFFFF;outline-offset:2px}
 
 /* ---- ejecución (.run, .log, .opts) ---- */
@@ -598,7 +599,7 @@ button.icon-btn:hover:not(:disabled),button.x:hover:not(:disabled){background:va
   .brand,.side-foot{display:none}.tabs{flex-direction:row;flex:1;justify-content:space-around}.tabs button{flex-direction:column;gap:3px;font-size:12px;padding:6px 10px;min-height:44px}.tabs button.on::before{display:none}
   .mainc{order:1}.top{padding:0 16px}.tab{padding:16px}
   .next{flex-direction:column;align-items:flex-start}
-  .sidetog{display:none}.app.mini{--side:auto}.mini .side{padding:6px 8px}
+  .app.mini{--side:auto}.mini .side{padding:6px 8px}
   .mini .tabs button .tl{display:block}.mini .tabs button{padding:6px 10px}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
@@ -623,7 +624,7 @@ button.icon-btn:hover:not(:disabled),button.x:hover:not(:disabled){background:va
      .tabs button     menú lateral
      .sidetog         la flecha que pliega el menú: solo la flecha
    ================================================================== */
-button{/* SECUNDARIO (sin clase): sin relleno en reposo. El hover lo rellena. */
+button:not(.sidetog){/* SECUNDARIO (sin clase): sin relleno en reposo. El hover lo rellena. */
   --d:#1B2238;--m:#35367E;--n:#5667BF;
   --mf:color-mix(in srgb,var(--m) 77%,#090C16);
   --bd:color-mix(in srgb,var(--n) 65%,var(--s2));
@@ -634,14 +635,18 @@ button{/* SECUNDARIO (sin clase): sin relleno en reposo. El hover lo rellena. */
   background:transparent;border:1px solid var(--bd);
   text-shadow:none;box-shadow:none;cursor:pointer;position:relative;
   transition:border-color .16s,box-shadow .16s,transform .12s,color .16s,background .16s}
-/* excepción: la flecha que pliega el menú. En reposo no parece un botón: ni fondo ni borde.
-   Encendida usa exactamente el mismo lenguaje que una opción del menú, para que no desentone:
-   relleno plano del mismo azul (nada de degradado), aro fino, halo y el icono en el mismo tono. */
-.sidetog{min-height:0;padding:0;width:26px;height:26px;gap:0;border-radius:var(--r-md);
-  background:none;border:0;box-shadow:none;color:var(--dim);cursor:pointer}
-.sidetog:hover:not(:disabled){border:0;color:#fff;text-shadow:none;background:rgba(74,103,255,.26);
+/* excepción: la flecha que pliega el menú. No hereda nada del sistema de botones (está excluida
+   arriba con :not), así que se define entera aquí y ninguna regla compite con ella. En reposo es
+   solo la flecha; encendida usa los mismos valores que una opción del menú, para no desentonar:
+   relleno plano del mismo azul, sin degradado, el mismo aro y el mismo halo. El foco de teclado
+   lo pone la regla global :focus-visible, igual que en el resto de la app. */
+.sidetog{display:grid;place-items:center;flex:none;margin-left:auto;width:26px;height:26px;padding:0;
+  border:0;border-radius:var(--r-md);background:none;box-shadow:none;color:var(--dim);cursor:pointer;
+  transition:background .16s,color .16s,box-shadow .16s}
+.sidetog:hover{color:#fff;background:rgba(74,103,255,.26);
   box-shadow:inset 0 0 0 1px rgba(143,162,255,.5),0 0 16px rgba(74,103,255,.35)}
 .sidetog:hover svg{color:#B9C6FF}
+.sidetog svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform .18s}
 /* excepción: menú lateral. Plano, sin degradado. */
 .tabs button{justify-content:flex-start;min-height:0;gap:11px;padding:10px 12px;
   background:transparent;border:0;box-shadow:none;text-shadow:none;

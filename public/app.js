@@ -296,7 +296,12 @@ function pintarRutas() {
   ];
   if (r.respondidasSinIncorporar) k.push(kpi('Respondidas sin incorporar', r.respondidasSinIncorporar, 'pendientes de pasar al paquete de contexto', 'info'));
   if (i.initialized) k.push(`<div class="kpi click" data-lotes role="button" tabindex="0" title="Definir o editar los lotes de historias"><div class="l">Lotes</div><div class="v">${i.alcances.length}</div><div class="s">${esc(i.alcances.join(', ') || 'definir lotes')}</div></div>`);
-  if (r.propuestas) k.push(kpi('Decisiones por validar', r.propuestas, '', 'warn', true));
+  if (r.propuestas) {
+    // No es un número: es la lista de claves de decisión, y cada clave es una palabra larga sin
+    // espacios. En una columna estrecha no tiene por dónde partir, así que va una por etiqueta.
+    const dec = String(r.propuestas).split(/[,;]\s*/).map((x) => x.trim()).filter(Boolean);
+    k.push(`<div class="kpi warn"><div class="l">Decisiones por validar</div><div class="dchips">${dec.map((d) => `<span>${esc(d)}</span>`).join('')}</div></div>`);
+  }
   $('#summary').innerHTML = k.join('');
   $('#pdesc').textContent = cur.descripcion || '';
 
