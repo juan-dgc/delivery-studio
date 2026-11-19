@@ -764,7 +764,7 @@ h4.sep,h5.sep{margin-top:18px}
 .flow .node.upnext .num{background:var(--info);border-color:var(--info);color:#fff}
 .flow .node.COMPLETADO .badge,.flow .node.approved .badge{background:color-mix(in srgb,var(--ok) 16%,transparent);border-color:var(--ok);color:color-mix(in srgb,var(--ok) 55%,#fff)}
 .flow .node.COMPLETADO .badge::before{content:"✓"}
-.flow .node.COMPLETADO .num{background:var(--ok);border-color:var(--ok);color:#032a20}
+.flow .node.COMPLETADO .num{background:var(--ok);border-color:var(--ok);color:color-mix(in srgb,var(--ok) 22%,#000)}
 .flow .node.toapprove{background:color-mix(in srgb,var(--info) 9%,var(--s2));border-color:var(--info);box-shadow:0 0 0 1px var(--info),0 6px 22px color-mix(in srgb,var(--info) 30%,transparent)}
 .flow .node.toapprove .badge{background:color-mix(in srgb,var(--info) 18%,transparent);border-color:var(--info);color:color-mix(in srgb,var(--info) 55%,#fff)}
 .flow .node.toapprove .badge::before{content:"◔"}
@@ -815,7 +815,9 @@ h4.sep,h5.sep{margin-top:18px}
 .flow .node.failed{--sc:var(--bad);background:color-mix(in srgb,var(--bad) 8%,var(--s2));border-color:var(--bad);box-shadow:0 0 0 1px var(--bad),0 6px 22px color-mix(in srgb,var(--bad) 22%,transparent)}
 .flow .node.failed .badge{background:rgba(255,61,110,.16);border-color:var(--bad);color:color-mix(in srgb,var(--bad) 55%,#fff)}
 .flow .node.failed .badge::before{content:"✕"}
-.flow .node.failed .num{background:var(--bad);border-color:var(--bad);color:#2A0710}
+.flow .node.failed .num{background:var(--bad);border-color:var(--bad);color:color-mix(in srgb,var(--bad) 22%,#000)}
+.flow .node.running .num,.flow .node.running.running .num{background:var(--cy);border-color:var(--cy);color:color-mix(in srgb,var(--cy) 22%,#000)}
+.flow .node.DESACTUALIZADO .num,.flow .node.POR_REVISAR .num,.flow .node.PARCIAL .num{background:var(--warn);border-color:var(--warn);color:color-mix(in srgb,var(--warn) 22%,#000)}
 .flow .node.failed::after{background:var(--bad)}
 .node.failed .next-tag{background:var(--bad)}
 .kpi,.rcard,.next,.node,.runs,.tree,.viewer,.card2,.bcol,.side-foot{background:var(--card);border:1px solid var(--card-b);box-shadow:none}
@@ -902,10 +904,11 @@ h4.sep,h5.sep{margin-top:18px}
   --font:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
   --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace}
 .node .miss{font-size:12px;color:var(--warn)}
-.node .chips{display:flex;flex-wrap:wrap;gap:4px}
-.node .chips span{font:10.5px var(--mono);padding:1px 7px;border-radius:6px;background:var(--s3);color:var(--mut)}.flow .node .miss{color:var(--dim)}
+.node .chips{display:flex;flex-wrap:wrap;gap:4px 10px}
+.node .chips span.ap,.node .chips span.pk{padding:1px 7px;border-radius:6px}
+.node .chips span{font:10.5px var(--mono);padding:1px 0;background:none;color:var(--mut)}.flow .node .miss{color:var(--dim)}
 .flow .node .miss.act{color:color-mix(in srgb,var(--info) 55%,#fff)}
-.flow .node .miss.bad,.node .miss.bad{color:var(--bad)}
+.flow .node .miss.bad,.node .miss.bad{color:color-mix(in srgb,var(--bad) 55%,#fff)}
 
 /* paquete de contexto por tandas */
 .chip.pk,.chips .pk{background:color-mix(in srgb,var(--warn) 14%,transparent);border:1px solid var(--warn);color:color-mix(in srgb,var(--warn) 55%,#fff);border-radius:99px;padding:2px 10px;font-size:12px;font-weight:600}
