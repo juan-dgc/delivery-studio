@@ -696,7 +696,6 @@ h4.sep,h5.sep{margin-top:18px}
 .res .files a{display:block;color:var(--pri-t);cursor:pointer;font-size:13px;overflow-wrap:anywhere}
 .pill{display:inline-flex;padding:1px 9px;border-radius:99px;border:1px solid color-mix(in srgb,var(--rc,#8EA0E0) 60%,transparent);background:color-mix(in srgb,var(--rc,#8EA0E0) 15%,transparent);color:#fff;font-weight:600}
 .pill.q{--rc:var(--warn);color:color-mix(in srgb,var(--warn) 55%,#fff)}
-.chips .ap{border-color:color-mix(in srgb,var(--ok) 55%,transparent);color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}
 .chips .ap.otro{opacity:.5}
 
 /* ---- tarjetas de paso de la ruta (.node, .flow) ---- */
@@ -713,7 +712,7 @@ h4.sep,h5.sep{margin-top:18px}
 .node.COMPLETADO{border-color:color-mix(in srgb,var(--ok) 55%,var(--line))}
 .node.COMPLETADO .badge{color:var(--ok)}
 .node.COMPLETADO .badge::before{content:"✓"}
-.node.COMPLETADO .num{background:var(--ok);border-color:var(--ok);color:#03281e}
+.node.COMPLETADO .num{background:var(--ok);border-color:var(--ok);color:color-mix(in srgb,var(--ok) 22%,#000)}
 .node.approved{background:var(--t-ok)}
 .node.DESACTUALIZADO,.node.POR_REVISAR{border-color:color-mix(in srgb,var(--warn) 55%,var(--line));background:var(--t-warn)}
 .node.DESACTUALIZADO .badge,.node.POR_REVISAR .badge{color:var(--warn)}
@@ -728,18 +727,18 @@ h4.sep,h5.sep{margin-top:18px}
 .node.upnext{border-color:var(--info);background:var(--t-info)}
 .node.upnext .badge{color:var(--info)}
 .node.upnext .badge::before{content:"▸"}
-.node.upnext .num{background:var(--info);border-color:var(--info);color:#fff}
+.node.upnext .num{background:var(--info);border-color:var(--info);color:color-mix(in srgb,var(--info) 22%,#000)}
 .node.toapprove{border-color:color-mix(in srgb,var(--info) 65%,var(--line));background:var(--t-info)}
 .node.toapprove .badge{color:var(--info)}
 .node.toapprove .badge::before{content:"◔"}
-.node.toapprove .num{background:var(--info);border-color:var(--info);color:#00323a}
+.node.toapprove .num{background:var(--info);border-color:var(--info);color:color-mix(in srgb,var(--info) 22%,#000)}
 .node.running{border-color:var(--pri);background:var(--t-pri)}
 .node.running .badge{color:var(--pri-t)}
 .node.running .badge::before{content:"●"}
 .node.failed{border-color:var(--bad);background:var(--t-bad)}
 .node.failed .badge{color:var(--bad)}
 .node.failed .badge::before{content:"✕"}
-.node.failed .num{background:var(--bad);border-color:var(--bad);color:#2A0710}
+.node.failed .num{background:var(--bad);border-color:var(--bad);color:color-mix(in srgb,var(--bad) 22%,#000)}
 .node.blocked{opacity:.8}/* vagones conectados: serpentina con flechas */
 .flow.seq{--cols:3;--gap:48px;--lc:#6F7CA8;display:grid;grid-template-columns:repeat(var(--cols),minmax(0,1fr));column-gap:var(--gap);row-gap:var(--gap)}
 .flow.seq .node{min-height:150px}
@@ -761,14 +760,14 @@ h4.sep,h5.sep{margin-top:18px}
 .flow .node.upnext{background:color-mix(in srgb,var(--info) 9%,var(--s2));border-color:var(--info);box-shadow:0 0 0 1px var(--info),0 6px 22px color-mix(in srgb,var(--info) 30%,transparent)}
 .flow .node.upnext .badge{background:color-mix(in srgb,var(--info) 18%,transparent);border-color:var(--info);color:color-mix(in srgb,var(--info) 55%,#fff)}
 .flow .node.upnext .badge::before{content:"▸"}
-.flow .node.upnext .num{background:var(--info);border-color:var(--info);color:#fff}
+.flow .node.upnext .num{background:var(--info);border-color:var(--info);color:color-mix(in srgb,var(--info) 22%,#000)}
 .flow .node.COMPLETADO .badge,.flow .node.approved .badge{background:color-mix(in srgb,var(--ok) 16%,transparent);border-color:var(--ok);color:color-mix(in srgb,var(--ok) 55%,#fff)}
 .flow .node.COMPLETADO .badge::before{content:"✓"}
 .flow .node.COMPLETADO .num{background:var(--ok);border-color:var(--ok);color:color-mix(in srgb,var(--ok) 22%,#000)}
 .flow .node.toapprove{background:color-mix(in srgb,var(--info) 9%,var(--s2));border-color:var(--info);box-shadow:0 0 0 1px var(--info),0 6px 22px color-mix(in srgb,var(--info) 30%,transparent)}
 .flow .node.toapprove .badge{background:color-mix(in srgb,var(--info) 18%,transparent);border-color:var(--info);color:color-mix(in srgb,var(--info) 55%,#fff)}
 .flow .node.toapprove .badge::before{content:"◔"}
-.flow .node.toapprove .num{background:var(--info);border-color:var(--info);color:#fff}
+.flow .node.toapprove .num{background:var(--info);border-color:var(--info);color:color-mix(in srgb,var(--info) 22%,#000)}
 .flow .node.running{background:color-mix(in srgb,var(--cy) 8%,var(--s2));border-color:var(--cy);box-shadow:0 0 0 1px var(--cy),0 6px 22px rgba(61,216,238,.25)}
 .flow .node.running .badge{background:rgba(61,216,238,.16);border-color:var(--cy);color:#7FE6F5}
 .flow .node.running .badge::before{content:"●"}
@@ -786,7 +785,7 @@ h4.sep,h5.sep{margin-top:18px}
 .flow .node.upnext::after{background:var(--info)}
 .flow .node.toapprove.toapprove{background:color-mix(in srgb,var(--info) 8%,var(--s2));border-color:var(--info);box-shadow:0 0 0 1px var(--info),0 6px 22px color-mix(in srgb,var(--info) 30%,transparent)}
 .flow .node.toapprove.toapprove .badge{background:color-mix(in srgb,var(--info) 18%,transparent);border-color:var(--info);color:color-mix(in srgb,var(--info) 55%,#fff)}
-.flow .node.toapprove.toapprove .num{background:var(--info);border-color:var(--info);color:#fff}
+.flow .node.toapprove.toapprove .num{background:var(--info);border-color:var(--info);color:color-mix(in srgb,var(--info) 22%,#000)}
 .flow .node.running.running{background:color-mix(in srgb,var(--cy) 7%,var(--s2));border-color:var(--cy);box-shadow:0 0 0 1px var(--cy),0 6px 22px rgba(61,216,238,.25)}
 .flow .node.running.running .badge{background:rgba(61,216,238,.16);border-color:var(--cy);color:#7FE6F5}
 /* tarjetas de paso: el hover ilumina con su propio color */
@@ -905,13 +904,14 @@ h4.sep,h5.sep{margin-top:18px}
   --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace}
 .node .miss{font-size:12px;color:var(--warn)}
 .node .chips{display:flex;flex-wrap:wrap;gap:4px 10px}
-.node .chips span.ap,.node .chips span.pk{padding:1px 7px;border-radius:6px}
-.node .chips span{font:10.5px var(--mono);padding:1px 0;background:none;color:var(--mut)}.flow .node .miss{color:var(--dim)}
+.node .chips span{font:10.5px var(--mono);padding:1px 0;background:none;color:var(--mut)}
+.node .chips span.ap{color:var(--ok)}
+.node .chips span.pk{color:var(--warn);font-weight:600}.flow .node .miss{color:var(--dim)}
 .flow .node .miss.act{color:color-mix(in srgb,var(--info) 55%,#fff)}
 .flow .node .miss.bad,.node .miss.bad{color:color-mix(in srgb,var(--bad) 55%,#fff)}
 
 /* paquete de contexto por tandas */
-.chip.pk,.chips .pk{background:color-mix(in srgb,var(--warn) 14%,transparent);border:1px solid var(--warn);color:color-mix(in srgb,var(--warn) 55%,#fff);border-radius:99px;padding:2px 10px;font-size:12px;font-weight:600}
+.chip.pk{background:color-mix(in srgb,var(--warn) 14%,transparent);border:1px solid var(--warn);color:color-mix(in srgb,var(--warn) 55%,#fff);border-radius:99px;padding:2px 10px;font-size:12px;font-weight:600}
 .files h5.sep{margin-top:8px}
 
 .normal{font-weight:400}
